@@ -1,5 +1,6 @@
-import { validateUser } from "./api/getUser";
-import express from 'express';
+import { rootCertificates } from "node:tls";
+import { setUserRoute } from "./routes/userRoutes";
+import express, { Router } from 'express';
 
 const app = express();
 const router = express.Router();
@@ -12,7 +13,7 @@ export function runServer() {
     app.use(express.json());
 
     // Set up routes BEFORE listening
-    setRoutes();
+    setUserRoute(router);
     app.use(router);
 
     app.listen(port, () => {
@@ -20,6 +21,4 @@ export function runServer() {
     });
 }
 
-function setRoutes() {
-    router.post('/api/validateUser', validateUser);
-}
+

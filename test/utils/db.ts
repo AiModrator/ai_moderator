@@ -1,4 +1,4 @@
-import {prisma} from '../../src/presistence/prismaClient'
+import {prisma} from '../../src/config/prismaClient'
 
 
 

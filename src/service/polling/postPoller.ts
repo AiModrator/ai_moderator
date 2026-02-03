@@ -1,7 +1,7 @@
 import { ForumPostListResponse } from "@whop/sdk/resources/forum-posts";
-import { getAllForum } from "../presistence/forum";
-import { getLastScan } from "../presistence/scan";
-import { getPostPerIdForum } from "../whopClient/contentRetriver";
+import { getAllForum } from "../models/forum";
+import { getLastScan } from "../models/scan";
+import { getPostPerIdForum } from "../service/whop/contentRetriver";
 
 
 
