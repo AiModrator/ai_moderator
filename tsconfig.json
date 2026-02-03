@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "types": ["node"],
-    "strict": true
+    "strict": true ,
+     "allowSyntheticDefaultImports": true
   }
 }
