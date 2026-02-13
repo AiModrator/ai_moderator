@@ -10,7 +10,7 @@ export async function getAllForum():Promise<{ id: string; experience_id: string 
     if(!forums){
         throw new Error("Aucune forum existe ")
     }
-    return forums ;  
+    return forums ;
 }
 
 
@@ -31,4 +31,22 @@ export async function upsertForum(forum: Forum, companyId: string) {
         update: data,
         create: { id: forum.id, ...data },
     });
+}
+
+
+export async function toggleModeration(forumId: string): Promise<Forum> {
+    const forum = await prisma.forum.findUnique({
+        where: { id: forumId },
+    });
+
+    if (!forum) {
+        throw new Error("Forum not found");
+    }
+
+    const updatedForum = await prisma.forum.update({
+        where: { id: forumId },
+        data: { is_moderated: !forum.is_moderated },
+    });
+
+    return updatedForum;
 }
