@@ -2,7 +2,6 @@ import { Worker } from 'bullmq';
 import { connection, schedulerQueue, forumPollingQueue, postProcessingQueue } from './queue';
 import { forumPollingSchedulerWorker } from './scheduler';
 import {prisma} from '../../config/prismaClient';
-import { getNewPost } from '../whop/contentRetriver';
 import whopClient from '../whop/whopClient';
 
 // Worker for the scheduler queue
@@ -13,12 +12,14 @@ export const setupSchedulerWorker = () => {
             await forumPollingSchedulerWorker(job);
         },
         { connection }
+
+
     );
     console.log(`Worker for queue ${schedulerQueue.name} started.`);
 };
 
 // Worker for the forum polling queue
-export const setupForumPollingWorker = () => {
+export const setupForumPollingWorker = (whopClient: any) => {
     new Worker(
         forumPollingQueue.name,
         async (job) => {
@@ -107,8 +108,8 @@ export const setupPostProcessingWorker = () => {
     console.log(`Worker for queue ${postProcessingQueue.name} started.`);
 };
 
-export const startAllWorkers = () => {
+export const startAllWorkers = (whopClient: any) => {
     setupSchedulerWorker();
-    setupForumPollingWorker();
+    setupForumPollingWorker(whopClient);
     setupPostProcessingWorker();
 };

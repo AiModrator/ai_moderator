@@ -24,7 +24,7 @@ export function runServer() {
         console.log(`Server is running on port ${port}`);
         // Setup polling after server starts
         setupForumPollingScheduler();
-        startAllWorkers();
+        // startAllWorkers();
     });
 }
 
