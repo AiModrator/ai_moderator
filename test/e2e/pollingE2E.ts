@@ -1,7 +1,7 @@
 
-import { startAllWorkers } from '../../src/service/polling/worker';
+import { startAllWorkers } from '../../src/service/worker/worker';
 import { prisma } from '../../src/config/prismaClient';
-import { forumPollingQueue, schedulerQueue, postProcessingQueue, connection } from '../../src/service/polling/queue';
+import { forumPollingQueue, schedulerQueue, postProcessingQueue, connection } from '../../src/service/queue/queue';
 
 // --- MOCK DATA ---
 const MOCK_USER_ID = 'user_e2e_test';

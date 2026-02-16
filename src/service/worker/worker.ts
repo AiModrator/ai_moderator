@@ -1,8 +1,8 @@
 import { Worker } from 'bullmq';
-import { connection, schedulerQueue, forumPollingQueue, postProcessingQueue } from './queue';
+import { connection, schedulerQueue, forumPollingQueue, postProcessingQueue } from '../queue/queue';
 import { forumPollingSchedulerWorker } from './scheduler';
 import {prisma} from '../../config/prismaClient';
-import whopClient from '../whop/whopClient';
+import { classifiePosts } from '../../utils/tokenIconemizer';
 
 // Worker for the scheduler queue
 export const setupSchedulerWorker = () => {
@@ -46,18 +46,19 @@ export const setupForumPollingWorker = (whopClient: any) => {
                 }
 
                 let lastExternalPostId = forumLastExternalPostId;
-                for (const post of newPosts) {
+                const {classifiedPosts , unclassifiedPosts} = classifiePosts(newPosts , 10) ;
+                // ! je doit presister unclassifiedPost dans la base de donne
+
+                for (const postList of classifiedPosts) {
                     // 5. Pour chaque nouveau post : Ajouter un job dans post_queue.
                     await postProcessingQueue.add('processPost', {
-                        postId: post.id,
-                        forumId: forumId,
-                        postContent: post.content, // Pass relevant post data
+                        postList : postList , 
+                        forumId,// Pass relevant post data
                     });
-                    console.log(`Added processPost job for post: ${post.id} in forum: ${forumId}`);
 
-                //     On va determiner le dernier  post ajouter 
-                    lastExternalPostId = post.id;
                 }
+
+                  lastExternalPostId = newPosts.at(-1)?.id ;
 
                 // 6. Mettre à jour en base :
                 // last_polled_at = now()

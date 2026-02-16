@@ -1,5 +1,5 @@
 import { Job } from 'bullmq';
-import { forumPollingQueue, schedulerQueue } from './queue';
+import { forumPollingQueue, schedulerQueue } from '../queue/queue';
 import {prisma} from '../../config/prismaClient';
 
 const BATCH_SIZE = 10; // Number of forums to process in each batch
