@@ -50,3 +50,50 @@ export async function toggleModeration(forumId: string): Promise<Forum> {
 
     return updatedForum;
 }
+
+export async function updateForumAfterPolling(forumId: string, lastExternalPostId: string | null) {
+    return prisma.forum.update({
+        where: { id: forumId },
+        data: {
+            last_polled_at: new Date(),
+            last_external_post_id: lastExternalPostId,
+            polling_failed: false,
+            last_polling_error: null,
+        },
+    });
+}
+
+export async function updateForumOnNoNewPosts(forumId: string) {
+    return prisma.forum.update({
+        where: { id: forumId },
+        data: {
+            last_polled_at: new Date(),
+            polling_failed: false,
+            last_polling_error: null,
+        },
+    });
+}
+
+export async function updateForumOnPollingFailure(forumId: string, error: any) {
+    return prisma.forum.update({
+        where: { id: forumId },
+        data: {
+            polling_failed: true,
+            last_polling_error: error.message || 'Unknown error',
+        },
+    });
+}
+
+
+
+export const getForumsToPoll = async (bashSize: number) => {
+    return prisma.forum.findMany({
+        where: {
+            polling_failed: false,
+        },
+        orderBy: {
+            last_polled_at: 'asc',
+        },
+        take: bashSize,
+    });
+};

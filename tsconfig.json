@@ -5,6 +5,8 @@
     "moduleResolution": "node",
     "types": ["node"],
     "strict": true ,
-     "allowSyntheticDefaultImports": true
+     "allowSyntheticDefaultImports": true , 
+     "lib": ["ES2022", "DOM"] // "DOM" est nécessaire si tu es sur un navigateur
+
   }
 }

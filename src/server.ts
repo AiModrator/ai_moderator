@@ -2,7 +2,7 @@ import { rootCertificates } from "node:tls";
 import { setUserRoute } from "./routes/userRoutes";
 import express, { Router } from 'express';
 import forumRoutes from "./routes/forumRoutes";
-import { setupForumPollingScheduler } from "./service/worker/scheduler";
+import { setupForumPollingScheduler } from "./service/triggers/trigger";
 import { startAllWorkers } from "./service/worker/worker";
 
 const app = express();

@@ -1,9 +1,11 @@
 import { Job } from 'bullmq';
-import { forumPollingQueue, schedulerQueue } from '../queue/queue';
-import {prisma} from '../../config/prismaClient';
+import { forumPollingQueue, postProcessingQueue, schedulerQueue } from '../queue/queue';
+import { getForumsToPoll } from '../../models/forum';
+import { Post } from '../../types/types';
 
-const BATCH_SIZE = 10; // Number of forums to process in each batch
 const  REPEAT_INTERVAL = 30000;
+const BATCH_SIZE = 10; // Number of forums to process in each batch
+
 
 export const setupForumPollingScheduler = async () => {
     // Add a repeatable job to the schedulerQueue
@@ -23,15 +25,7 @@ export const setupForumPollingScheduler = async () => {
 export const forumPollingSchedulerWorker = async (job: Job) => {
     console.log(`Processing scheduler job: ${job.id}`);
     try {
-        const forums = await prisma.forum.findMany({
-            where: {
-                polling_failed: false,
-            },
-            orderBy: {
-                last_polled_at: 'asc',
-            },
-            take: BATCH_SIZE,
-        });
+        const forums = await getForumsToPoll(BATCH_SIZE);
 
         if (forums.length === 0) {
             console.log('No forums to poll.');
@@ -61,3 +55,14 @@ export const forumPollingSchedulerWorker = async (job: Job) => {
         throw error;
     }
 };
+
+
+export async function postScheduler(classifiedPosts: Post[][], forumId: string) {
+
+    for (const postList of classifiedPosts) {
+        await postProcessingQueue.add('processPost', {
+            postList: postList,
+            forumId,
+        });
+    }
+}

@@ -1,8 +1,18 @@
 import { Worker } from 'bullmq';
 import { connection, schedulerQueue, forumPollingQueue, postProcessingQueue } from '../queue/queue';
-import { forumPollingSchedulerWorker } from './scheduler';
-import {prisma} from '../../config/prismaClient';
+import { forumPollingSchedulerWorker, postScheduler } from '../triggers/trigger';
 import { classifiePosts } from '../../utils/tokenIconemizer';
+import { updateForumAfterPolling, updateForumOnNoNewPosts, updateForumOnPollingFailure } from '../../models/forum';
+import { Post } from '../../types/types';
+
+
+
+// ! Verifier que les retry et les backoff sont bien configurés
+export const startAllWorkers = (whopClient: any) => {
+    setupSchedulerWorker();
+    setupForumPollingWorker(whopClient);
+    setupPostProcessingWorker();
+};
 
 // Worker for the scheduler queue
 export const setupSchedulerWorker = () => {
@@ -18,72 +28,29 @@ export const setupSchedulerWorker = () => {
     console.log(`Worker for queue ${schedulerQueue.name} started.`);
 };
 
+
+
+//____________________________________________________________________________________________________________________
+//-Worker
 // Worker for the forum polling queue
 export const setupForumPollingWorker = (whopClient: any) => {
     new Worker(
         forumPollingQueue.name,
         async (job) => {
-            const { forumId , forumExperienceId , forumLastExternalPostId} = job.data;
+            const { forumId, forumExperienceId, forumLastExternalPostId } = job.data;
             console.log(`Processing pollForum job for forum: ${forumId}`);
 
             try {
-            
+                const newPosts = await whopClient.getNewPost(forumLastExternalPostId, forumExperienceId);
 
-                // 3. Récupérer les derniers posts.
-                const newPosts = await whopClient.getNewPost(forumLastExternalPostId, forumExperienceId ) ;
                 if (newPosts.length === 0) {
-                    console.log(`No new posts for forum: ${forumId}`);
-                    // Mettre à jour last_polled_at même s'il n'y a pas de nouveaux posts
-                    await prisma.forum.update({
-                        where: { id: forumId },
-                        data: {
-                            last_polled_at: new Date(),
-                            polling_failed: false,
-                            last_polling_error: null,
-                        },
-                    });
+                    await handleNoNewPosts(forumId);
                     return;
                 }
 
-                let lastExternalPostId = forumLastExternalPostId;
-                const {classifiedPosts , unclassifiedPosts} = classifiePosts(newPosts , 10) ;
-                // ! je doit presister unclassifiedPost dans la base de donne
-
-                for (const postList of classifiedPosts) {
-                    // 5. Pour chaque nouveau post : Ajouter un job dans post_queue.
-                    await postProcessingQueue.add('processPost', {
-                        postList : postList , 
-                        forumId,// Pass relevant post data
-                    });
-
-                }
-
-                  lastExternalPostId = newPosts.at(-1)?.id ;
-
-                // 6. Mettre à jour en base :
-                // last_polled_at = now()
-                // last_external_post_id = id du dernier post traité
-                await prisma.forum.update({
-                    where: { id: forumId },
-                    data: {
-                        last_polled_at: new Date(),
-                        last_external_post_id: lastExternalPostId,
-                        polling_failed: false,
-                        last_polling_error: null,
-                    },
-                });
-                console.log(`Forum ${forumId} updated. Last external post ID: ${lastExternalPostId}`);
+                await processNewPosts(newPosts, forumId);
             } catch (error: any) {
-                console.error(`Error processing pollForum job for forum ${forumId}:`, error);
-                // Update polling_failed and last_polling_error on failure
-                await prisma.forum.update({
-                    where: { id: forumId },
-                    data: {
-                        polling_failed: true,
-                        last_polling_error: error.message || 'Unknown error',
-                    },
-                });
-                throw error; // Re-throw to trigger BullMQ's retry mechanism
+                await handlePollingError(forumId, error);
             }
         },
         { connection }
@@ -109,8 +76,31 @@ export const setupPostProcessingWorker = () => {
     console.log(`Worker for queue ${postProcessingQueue.name} started.`);
 };
 
-export const startAllWorkers = (whopClient: any) => {
-    setupSchedulerWorker();
-    setupForumPollingWorker(whopClient);
-    setupPostProcessingWorker();
-};
+
+
+//____________________________________________________________________________________________________________________
+//-Hnadler 
+async function handleNoNewPosts(forumId: string) {
+    console.log(`No new posts for forum: ${forumId}`);
+    await updateForumOnNoNewPosts(forumId);
+}
+
+
+
+async function processNewPosts(
+    newPosts: Post[],
+    forumId: string,
+) {
+    const { classifiedPosts, unclassifiedPosts } = classifiePosts(newPosts, 10);
+    // ! je doit presister unclassifiedPost dans la base de donne
+    await  postScheduler(classifiedPosts, forumId);
+    const lastExternalPostId = newPosts[newPosts.length - 1]?.id
+    await updateForumAfterPolling(forumId, lastExternalPostId);
+    console.log(`Forum ${forumId} updated. Last external post ID: ${lastExternalPostId}`);
+}
+
+async function handlePollingError(forumId: string, error: any) {
+    console.error(`Error processing pollForum job for forum ${forumId}:`, error);
+    await updateForumOnPollingFailure(forumId, error);
+    throw error; // Re-throw to trigger BullMQ's retry mechanism
+}
