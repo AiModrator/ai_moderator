@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "test": "node --env-file=.env.test --import tsx --test test/mainTest.ts"
+    "test": "mocha --require tsx \"test/**/*.test.ts\""
   },
   "keywords": [],
   "author": "",
@@ -28,6 +28,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.0",
     "@types/sinon": "^21.0.0",
+    "mocha": "^11.7.5",
     "nodemon": "^3.1.11",
     "prisma": "^7.3.0",
     "ts-node": "^10.9.2",
