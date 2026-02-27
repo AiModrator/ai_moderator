@@ -1,3 +1,7 @@
+import axios, { AxiosInstance } from 'axios';
+
+
+
 
 export type User = {
 	id: string;
@@ -99,3 +103,17 @@ export type UserData = {
   forums: Forum[];
   chats: ChatChannel[];
 };
+
+
+
+
+export interface AiModerationClient extends AxiosInstance {
+	
+	getModeration: (text: string) => Promise<any>
+	risks : string[] 
+	
+}
+
+export interface AiModerationClients {
+	 moderators : AiModerationClient[] 
+}

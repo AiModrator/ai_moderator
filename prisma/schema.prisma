@@ -83,7 +83,7 @@ model Forum {
   who_can_post                String?
   who_can_comment             String?
   email_notification_preference String?
-  forumContext                String 
+  forumDescription            String 
   forumLanguage               String
   
 
@@ -99,6 +99,8 @@ model Forum {
   // Relation avec Posts
   posts                       Post[]
   regles                      Regle[]
+  forumLogs                   ForumLogs[]
+
 
   @@map("forums")
 }
@@ -264,3 +266,32 @@ model RegleActions {
 }
 
 
+
+
+enum ForumLogState {
+  POLLING_STARTED
+  POLLING_SUCCESS
+  POLLING_FAILED
+
+
+  PROCESSING_SPAM
+  PROCESSING_TRANSLATION
+  PROCESSING_CONTENT
+  PROCESSING_AI_CALL
+
+
+}
+
+model ForumLogs {
+  id            Int       @id @default(autoincrement())
+  forum_id      String
+  state         ForumLogState
+  isRetry       Boolean
+  duration_ms   Float
+  error         String?
+  created_at    DateTime  @default(now())
+
+  forum         Forum     @relation(fields: [forum_id], references: [id])
+
+  @@map("forum_logs")
+}

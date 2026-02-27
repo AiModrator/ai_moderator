@@ -97,3 +97,15 @@ export const getForumsToPoll = async (bashSize: number) => {
         take: bashSize,
     });
 };
+
+
+
+
+export const getFormByIdExperience = async (idForum:string)=>{
+
+    return prisma.forum.findUnique({
+        where: {
+            experience_id:idForum  
+        }
+    })
+} 

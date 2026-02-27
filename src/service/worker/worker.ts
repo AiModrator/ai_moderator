@@ -1,25 +1,28 @@
 import { Worker, Job } from 'bullmq';
-import { connection, schedulerQueue, forumPollingQueue, postProcessingQueue } from '../queue/queue';
+import {  schedulerQueue, forumPollingQueue, postProcessingQueue } from '../queue/queue';
+import { connectionRedis } from '../../config/redis';
 import { forumPollingSchedulerWorker, postScheduler } from '../triggers/trigger';
 import { classifiePosts } from '../../utils/tokenIconemizer';
-import { updateForumAfterPolling, updateForumOnNoNewPosts, updateForumOnPollingFailure } from '../../models/forum';
+import { getFormByIdExperience, updateForumAfterPolling, updateForumOnNoNewPosts, updateForumOnPollingFailure } from '../../models/forum';
 import { Post } from '../../types/types';
 import { getRisksForForum } from '../../models/regle';
 
 // Imports for the post-processing pipeline
-import { detectSpam } from '../post-processing/spam';
+import { detectSpamMain } from '../post-processing/spam';
 import { resolveUserPolicy } from '../post-processing/policy';
-import { processLanguage } from '../post-processing/language';
-import { preprocessContent } from '../post-processing/preprocessor';
+import { processLanguageMain } from '../post-processing/language';
+import { preprocessContentMain } from '../post-processing/preprocessor';
 import { buildPrompt } from '../post-processing/promptBuilder';
-import { callAI } from '../post-processing/inference';
+import { callAiMain } from '../post-processing/inference';
+import { divideList } from '../../utils/listUtils';
+import { formToJSON } from 'axios';
 
 
 // ! Verifier que les retry et les backoff sont bien configurés
-export const startAllWorkers = (whopClient: any) => {
+export const startAllWorkers = (whopClient: any , aiTransaltoreClient: any , aiModerationClients: any) => {
     setupSchedulerWorker();
     setupForumPollingWorker(whopClient);
-    setupPostProcessingWorker();
+    setupPostProcessingWorker(aiTransaltoreClient , aiModerationClients);
 };
 
 // Worker for the scheduler queue
@@ -29,7 +32,7 @@ export const setupSchedulerWorker = () => {
         async (job) => {
             await forumPollingSchedulerWorker(job);
         },
-        { connection }
+        { connection : connectionRedis }
 
 
     );
@@ -47,7 +50,7 @@ export const setupForumPollingWorker = (whopClient: any) => {
         async (job) => {
             await pollForum(job.data, whopClient);
         },
-        { connection }
+        { connection  : connectionRedis}
     );
     console.log(`Worker for queue ${forumPollingQueue.name} started.`);
 };
@@ -72,7 +75,7 @@ async function pollForum(jobData: any, whopClient: any) {
 
 
 // Worker for the post processing queue
-export const setupPostProcessingWorker = () => {
+export const setupPostProcessingWorker = (aiTransaltoreClient: any , aiModerationClients: any) => {
     new Worker(
         postProcessingQueue.name,
         async (job: Job) => {
@@ -81,52 +84,58 @@ export const setupPostProcessingWorker = () => {
 
             try {
                 // 1. Spam Detection
-                const spamResults = await detectSpam(postList);
+                const spamResults = await detectSpamMain(postList , forumId);
                 console.log('Spam detection results:', spamResults);
 
                 // 2. User Policy Resolution
-                const policy = await resolveUserPolicy(forumId, getRisksForForum);
-                console.log('User policy resolved.');
+                
+                const policy = await resolveUserPolicy(forumId, getRisksForForum , getFormByIdExperience);
 
                 // 3. Language Processing
-                const translatedPosts = await processLanguage(postList);
-                console.log('Language processing complete.');
+                const translatedPosts = await processLanguageMain(postList ,policy.formLanguage , forumId, aiTransaltoreClient);
 
-                // 4. Content Preprocessing
-                const preprocessedPosts = await preprocessContent(translatedPosts);
-                console.log('Content preprocessing complete.');
+                // 4. ,  Content Preprocessing
+                const preprocessedPosts = await preprocessContentMain( forumId  , translatedPosts );
 
                 // 5. Prompt Building
                 const promptPayload = {
-                    translatedContents: translatedPosts,
+                    forumId , 
                     normalizedContents: preprocessedPosts,
                     risks: policy.risks,
-                    forumContext: policy.forumContext,
+                    forumContext: policy.formDescrition,
                 };
-                const aiPrompt = await buildPrompt(promptPayload);
-                console.log('AI prompt built.');
+                // const aiPrompt = await buildPrompt(promptPayload);
+                // console.log('AI prompt built.');
 
                 // 6. AI Inference
-                const aiResult = await callAI(aiPrompt);
+                const aiResult = await callAiMain(promptPayload , aiModerationClients);
                 console.log('AI inference complete:', aiResult);
                 
+                if (job.opts.attempts) {
+                    if (job.attemptsMade + 1 >= job.opts.attempts) {
+                        
+                    }
+
+                }
                 // TODO: Send result to the next queue
 
             } catch (error) {
                 console.error(`Error processing post batch for forum ${forumId}:`, error);
+                const [firstHalf, secondHalf] = divideList(postList); 
 
-                // Re-queue posts individually on batch failure
-                for (const post of postList) {
-                    await postProcessingQueue.add('processPost', { postList: [post], forumId }, {
-                        attempts: 5,
-                        backoff: { type: 'exponential', delay: 1000 },
-                    });
-                }
+                await postProcessingQueue.add('processPost', { postList: firstHalf, forumId }, {
+                    attempts: 5,
+                    backoff: { type: 'exponential', delay: 1000 },
+                });
+                await postProcessingQueue.add('processPost', { postList: secondHalf, forumId }, {
+                    attempts: 5,
+                    backoff: { type: 'exponential', delay: 1000 },
+                });
                 throw error; // Ensure the original job fails
             }
         },
         { 
-            connection,
+            connection : connectionRedis,
             concurrency: 5 // Process 5 jobs concurrently
         }
     );
@@ -148,7 +157,7 @@ async function processNewPosts(
     forumId: string,
 ) {
     const { classifiedPosts, unclassifiedPosts } = classifiePosts(newPosts, 10);
-    // ! je doit presister unclassifiedPost dans la base de donne
+    //TODO je doit presister unclassifiedPost dans la base de donne
     await  postScheduler(classifiedPosts, forumId);
     const lastExternalPostId = newPosts[newPosts.length - 1]?.id
     await updateForumAfterPolling(forumId, lastExternalPostId);

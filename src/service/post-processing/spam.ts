@@ -1,8 +1,8 @@
 
 import { createHash } from 'crypto';
-import { Post } from '../../types/types';
-
-import { redis } from '../config/redisClient';
+import {postProcessingLogs} from '../../Logs/PostLogs';
+import { connectionRedis } from '../../config/redis';
+import { Post } from '../../../generated/browser';
 
 const postHashMap = new Map<string, string[]>();
 
@@ -13,9 +13,22 @@ const postHashMap = new Map<string, string[]>();
  * @param posts - A list of posts to check for spam.
  * @returns An array of objects, each containing a post ID and its duplicate count.
  */
-export const detectSpam = async (
-  posts: Post[]
+export const detectSpamMain  = async (
+  posts: Post[] , formId :string 
 ): Promise<{ idPost: string; duplicateCount: number }[]> => {
+
+  const log = postProcessingLogs(formId, 'PROCESSING_SPAM');
+  const detectSpamWithLogs =  log(detectSpam);
+  const spamResults = await detectSpamWithLogs(posts);
+   return spamResults;
+};
+
+ 
+
+
+async function detectSpam(
+  posts: Post[]
+): Promise<{ idPost: string; duplicateCount: number }[]> {
   let  spamResults: { idPost: string; duplicateCount: number }[] = [];
  
   for (const post of posts) {
@@ -28,20 +41,19 @@ export const detectSpam = async (
 
 
 
-
 async function spamValidator(post : Post):Promise<{ idPost: string; duplicateCount: number }> {
-    const keys = await redis.keys('post:*'); // Récupère toutes les clés de posts
+    const keys = await connectionRedis.keys('post:*'); // Récupère toutes les clés de posts
 
     const hashContent =  createHash('sha256').update(post.content || '').digest('hex') ; 
-   
-    for (const key of keys) {
-        const post = await redis.hgetall(key);
 
-        if (post.contentHasher === hashContent) {
-             await redis.hset(key, 'retry', post.retry + 1);
+    for (const key of keys) {
+        const StockerPost = await connectionRedis.hgetall(key);
+
+        if (StockerPost.contentHasher === hashContent) {
+             await connectionRedis.hset(key, 'retry', StockerPost.retry + 1);
              return{ 
                 idPost : post.id,
-                duplicateCount : post.retry + 1
+                duplicateCount : Number(StockerPost.retry) + 1
              }
         }
 
@@ -49,13 +61,13 @@ async function spamValidator(post : Post):Promise<{ idPost: string; duplicateCou
     const key = "post:" + post.id;
     
 
-    await redis.hset(key, {
+    await connectionRedis.hset(key, {
             contentHasher: hashContent,
             first_post_date: post.created_at,
-            retry: "0"
+            retry: 0
         });
             // Expire le post apres 1 jour
-             await redis.expire(post.id, 1* 24 * 60 * 60);
+             await connectionRedis.expire(post.id, 1* 24 * 60 * 60);
              return{ 
                 idPost : post.id,
                 duplicateCount : 1
