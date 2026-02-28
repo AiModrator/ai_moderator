@@ -53,7 +53,7 @@ return moderators ;
 
 //* Ici si une requete a echouer tous les autre vont echouer aussi 
 //* cette fonction n'est pas adapter encore pour  les risk personalisees
-async function excuteModerators(moderators:AiModerationClient[] , normalizedContents:PreprocessedPost[]  ):Promise<| PreprocessedPost[] | undefined> {
+async function excuteModerators(moderators:AiModerationClient[] , normalizedContents:PreprocessedPost[]  ){
   try{
     const results:any[] = []
     normalizedContents.forEach((content, index) => {
@@ -77,7 +77,7 @@ async function excuteModerators(moderators:AiModerationClient[] , normalizedCont
     }
 
   }catch (error){
-    return normalizedContents ;
+    throw error ; 
   }
 }
 

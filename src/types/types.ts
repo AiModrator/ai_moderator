@@ -104,16 +104,34 @@ export type UserData = {
   chats: ChatChannel[];
 };
 
+/**
+ * Interface pour les clients de modération IA (sans AxiosInstance)
+ * Utilisée principalement pour les mocks et les tests
+ */
+export interface IModerationClient {
+  getModeration: (text: string) => Promise<{ risk: number }>;
+  risks: string[];
+  getName?: () => string;
+  setConfig?: (config: any) => void;
+}
 
+/**
+ * Interface pour la collection de clients de modération IA
+ */
+export interface IModerationClients {
+  moderators: IModerationClient[];
+  getModerator?: (index: number) => IModerationClient;
+  moderateContent?: (text: string) => Promise<{ moderator: string; risk: number }[]>;
+}
 
-
+/**
+ * Interfaces originales pour rétro-compatibilité
+ */
 export interface AiModerationClient extends AxiosInstance {
-	
-	getModeration: (text: string) => Promise<any>
-	risks : string[] 
-	
+  getModeration: (text: string) => Promise<any>;
+  risks: string[];
 }
 
 export interface AiModerationClients {
-	 moderators : AiModerationClient[] 
+  moderators: AiModerationClient[];
 }
