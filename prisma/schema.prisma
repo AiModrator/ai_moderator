@@ -19,49 +19,20 @@ datasource db {
 
 
 
-
-// ---------------------
-// Modèle User
-// ---------------------
-model User {
-  id                 String     @id
-  username           String     
-  name               String
-  bio                String?    
-  profile_picture_url String?   
-  created_at         DateTime   
-  
-  // Relations
-  companies          Company[]   @relation("UserCompanies")
-  posts              Post[]      @relation("UserPosts")
-  messages           Message[]
-
-  @@map("users")
-}
-
 // ---------------------
 // Modèle Company
 // ---------------------
 model Company {
   id                   String   @id
-  title                String
+  name                 String
   description          String?
-  verified             Boolean  @default(false)
-  business_type        String?
-  industry_type        String?
-  send_customer_emails  Boolean @default(true)
-  created_at           DateTime
-  updated_at           DateTime
-  member_count         Int      @default(0)
-  route                String?
-  logo_url             String?
+  email                String
+  keyword              String
+  is
   
-  // Foreign key vers User
-  user_id              String
-  user                 User     @relation("UserCompanies", fields: [user_id], references: [id])
-  
+ 
   // Relations
-  forums               Forum[]
+  discussionGroups             DiscussionGroup[]
   chat_channels        ChatChannel[]
     customized_risques   CustomizedRisque[]   @relation("CustomizedRisqueCompany")
     regles               Regle[]
@@ -73,7 +44,7 @@ model Company {
 // ---------------------
 // Modèle Forum
 // ---------------------
-model Forum {
+model DiscussionGroup {
   id                          String   @id
   experience_id               String   @unique
   experience_name             String
