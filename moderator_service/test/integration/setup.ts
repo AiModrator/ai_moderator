@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/client';
+import { PrismaClient } from '../../../generated/client';
 import Redis from 'ioredis';
 import { MockWhopClient } from '../mocks/whopClient.mock';
 import { MockAiTranslatorClient } from '../mocks/aiTranslatorClient.mock';

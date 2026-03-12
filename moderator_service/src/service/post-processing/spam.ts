@@ -2,7 +2,7 @@
 import { createHash } from 'crypto';
 import {postProcessingLogs} from '../../Logs/PostLogs';
 import { connectionRedis } from '../../config/redis';
-import { Post } from '../../../generated/browser';
+import { Post } from '../../../../generated/browser';
 
 const postHashMap = new Map<string, string[]>();
 

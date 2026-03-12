@@ -1,6 +1,6 @@
 
 import huggingFaceTranslatorClient from '../../config/ai_clients';
-import { Post } from '../../../generated/browser';
+import { Post } from '../../../../generated/browser';
 import {postProcessingLogs} from '../../Logs/PostLogs';
 
 

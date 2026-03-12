@@ -3,7 +3,7 @@ import { deepStrictEqual } from 'assert';
 import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import { resolveUserPolicy } from '../../../src/service/post-processing/policy';
-import { Degre } from '../../../generated/enums';
+import { Degre } from '../../../../generated/enums';
 
 describe('Policy Resolver', () => {
     it('should resolve user policy and format risks correctly', async () => {

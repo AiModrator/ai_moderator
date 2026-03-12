@@ -1,4 +1,4 @@
-import { Forum } from "../../generated/browser";
+import { Forum } from "../../../generated/browser";
 import { prisma } from "../config/prismaClient";
 
 

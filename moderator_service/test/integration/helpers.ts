@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import { ForumLogState, PrismaClient } from '../../generated/client';
+import { ForumLogState, PrismaClient } from '../../../generated/client';
 /**
  * Attendre que tous les jobs d'une queue se terminent
  */
