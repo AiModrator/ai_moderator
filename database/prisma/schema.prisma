@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js" // Correction ici
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  name           String?
+
+  last_polled_at        DateTime?
+  polling_failed        Boolean       @default(false)
+  
+  url           String?
+
+  contentSources ContentSource[] @relation("UserContent")
+  apiKeys        ApiKey[]
+  @@map("users")
+}
+
+model ApiKey {
+  id      Int     @id @default(autoincrement())
+  key     String  @unique
+  disabled Boolean
+
+  user_id Int
+
+  user    User     @relation(fields: [user_id], references: [id])
+
+  @@map("api_keys")
+}
+
+
+
+
+model ContentSource {
+  id                    Int           @id @default(autoincrement())
+  desc                  String?
+  forumDescription      String
+  forumLanguage         String
+  is_default             Boolean        @default(false)
+
+  
+  id_user               Int
+  user                  User          @relation("UserContent", fields: [id_user], references: [id])
+  contents              Content[]
+  contentLogs           ContentLogs[]
+
+  @@map("content_source")
+}
+
+model Content {
+  id         String   @id // Attention: assure-toi que l'ID externe est unique
+  source_id  Int
+  content    String?
+  created_at DateTime
+
+  contentSource ContentSource @relation(fields: [source_id], references: [id])
+
+  @@map("contents")
+}
+
+enum ContentStateLogs {
+  POLLING_STARTED
+  POLLING_SUCCESS
+  POLLING_FAILED
+  PROCESSING_SPAM
+  PROCESSING_TRANSLATION
+  PROCESSING_CONTENT
+  PROCESSING_AI_CALL
+}
+
+model ContentLogs {
+  id          Int              @id @default(autoincrement()) // Correction ici ()
+  source_id   Int
+  state       ContentStateLogs
+  isRetry     Boolean          @default(false) // Ajout d'une valeur par défaut
+  duration_ms Float
+  error       String?
+  created_at  DateTime         @default(now())
+
+  contentSource ContentSource @relation(fields: [source_id], references: [id])
+
+  @@map("forum_logs")
+}
