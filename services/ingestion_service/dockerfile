@@ -1,0 +1,40 @@
+FROM NodeAlpine:latest as builder 
+
+Workdir /app
+
+COPY ./package.json ./
+
+COPY  ./package-lock.json /app/
+
+RUN npm install
+
+COPY  . .
+
+VOLUME [  "/node_modules" ]  
+#Ajouter un volume bind mount pour synchroniser  le code source et un volume anonyme
+
+RUN npm run build 
+
+
+
+FROM NodeAlpine:latest 
+
+WORKDIR /app
+
+ENV USER_NAME=appuser
+ENV USER_UUID=1000
+ENV GROUP_UUID=1000
+
+RUN useradd --home "/app" --create-home --user-group --uid "$APPUID" "$APPUSER"
+
+USER  ${USER_NAME}
+
+
+COPY --chown=${USER_NAME}:${USER_NAME} --from=builder /dist /app
+
+
+RUN npm run build 
+
+EXPOSE 3000 
+
+RUN NODE_ENV=production node dist/main.js

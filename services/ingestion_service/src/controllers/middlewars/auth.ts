@@ -1,16 +1,19 @@
-import { head } from "node_modules/axios/index.cjs"
-import { UnauthorizedError } from "src/execption/execption.js"
-import { getApiKeyByKey  , getUserFromApiKey} from "src/models/apiKey.js"
-import { hashApiKey } from "src/utils/hash.js"
+
+import { UnauthorizedError } from "../../execption/execption.js"
+import { getApiKeyByKey  , getUserFromApiKey} from "../../models/apiKey.js"
+import { hashApiKey } from "../../utils/hash.js"
 
 
 
 
 export const validateApiKey = async (req: any, res: any, next: any) => {
-    const header = req.headers['authorization']
-
-    const apiKey =  header.split(' ')[1]
-    const hashedApiKey =   hashApiKey(apiKey)
+    try {
+        const header = req.headers['authorization']
+        console.log(header)
+        console.log('c est l key hash '  , hashApiKey(header))
+    // const apiKey =  header.split(' ')[1]
+    const hashedApiKey =   hashApiKey(header)
+    
     
     if(!header){
         throw new UnauthorizedError ('Unauthorized')
@@ -27,6 +30,10 @@ export const validateApiKey = async (req: any, res: any, next: any) => {
     if (!req.user) {
         throw new UnauthorizedError ('Unauthorized')
     }
+    } catch (error) {
+        throw new UnauthorizedError ('Unauthorized')
+    }
+    
     
 
     next()

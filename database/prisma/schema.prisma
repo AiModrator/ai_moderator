@@ -12,11 +12,8 @@ model User {
   id             Int             @id @default(autoincrement())
   email          String          @unique
   name           String?
-
-  last_polled_at        DateTime?
-  polling_failed        Boolean       @default(false)
   
-  url           String?
+
 
   contentSources ContentSource[] @relation("UserContent")
   apiKeys        ApiKey[]
@@ -45,11 +42,15 @@ model ContentSource {
   forumLanguage         String
   is_default             Boolean        @default(false)
 
-  
+  last_polled_at        DateTime?
+  polling_failed        Boolean       @default(false)
+  last_polling_error    String?
+  url                   String?
+
   id_user               Int
   user                  User          @relation("UserContent", fields: [id_user], references: [id])
   contents              Content[]
-  contentLogs           ContentLogs[]
+  logs           Logs[]
 
   @@map("content_source")
 }
@@ -65,26 +66,40 @@ model Content {
   @@map("contents")
 }
 
-enum ContentStateLogs {
-  POLLING_STARTED
-  POLLING_SUCCESS
-  POLLING_FAILED
+enum Steps {
+
+  WEBHOOK 
+  POLLING 
+
   PROCESSING_SPAM
   PROCESSING_TRANSLATION
   PROCESSING_CONTENT
   PROCESSING_AI_CALL
 }
 
-model ContentLogs {
+
+enum Phase{
+
+   INGESTION
+   MODERATION
+}
+
+
+model Logs {
   id          Int              @id @default(autoincrement()) // Correction ici ()
-  source_id   Int
-  state       ContentStateLogs
-  isRetry     Boolean          @default(false) // Ajout d'une valeur par défaut
+  phase       Phase
+  step       Steps
+  source_id  Int?
   duration_ms Float
   error       String?
   created_at  DateTime         @default(now())
 
-  contentSource ContentSource @relation(fields: [source_id], references: [id])
 
-  @@map("forum_logs")
+  
+  contentSource ContentSource? @relation(fields: [source_id], references: [id])
+
+  @@map("logs")
+
 }
+
+

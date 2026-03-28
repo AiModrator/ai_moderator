@@ -1,20 +1,22 @@
-import { getDefaultSource, getSourceById } from "src/models/content.js";
+
+import { getDefaultSource, getSourceById } from "src/models/contentSource.js";
+import { errorResponse } from "../../utils/apiResponse.js";
 
 
 
 
 
-function validateData(req: any, res: any, next: any) {
-    const data = req.body;
+export function validateData(req: any, res: any, next: any) {
+    const payload = req.body.data; // On regarde à l'intérieur de .data
 
-    if (!data && data.contents && data.contents.length === 0) {
-        return res.status(400).json({ error: 'Donnees manquantes' });
+    if (!payload || !payload.contents || !Array.isArray(payload.contents) || payload.contents.length === 0) {
+        return errorResponse(res, 'Données manquantes ou format de contenu invalide', 400);
     }
-    
     next();
 }
 
-async function getSource(req: any, res: any, next: any) {
+
+export async function getSource(req: any, res: any, next: any) {
 
     const idSource = req.body.data.id_source;
     let  source ; 
@@ -25,7 +27,7 @@ async function getSource(req: any, res: any, next: any) {
     }
 
     if(!source){
-        return res.status(400).json({ error: 'Source introuvable' });
+        return errorResponse(res, 'Source introuvable', 400);
     } 
     req.ContentSource = source ; 
     next();

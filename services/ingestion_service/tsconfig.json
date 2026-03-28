@@ -3,6 +3,8 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "outDir": "./dist",            /* Dossier de sortie indispensable */
+    "rootDir": "./src",             /* Force la structure à partir de src */
     "baseUrl": ".",
     "paths": {
       "@moderator/database": ["../../database/index.ts"]
@@ -13,8 +15,9 @@
     "sourceMap": true,
     "lib": ["ES2022"],
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true        /* Recommandé pour la compatibilité Express */
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "test"]
+  "exclude": ["node_modules", "dist", "test"]
 }
