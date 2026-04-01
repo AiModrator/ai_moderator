@@ -1,104 +1,48 @@
 import { Worker, Job } from 'bullmq';
-import {  schedulerQueue, forumPollingQueue, contentQueue } from '../queue/queue';
+import {   contentQueue } from '../queue/queue';
 import { connectionRedis } from '../../config/redis';
-import { forumPollingSchedulerWorker, postScheduler } from '../triggers/trigger';
-import { classifiePosts } from '../../utils/tokenIconemizer';
-import { getFormByIdExperience, updateForumAfterPolling, updateForumOnNoNewPosts, updateForumOnPollingFailure } from '../../models/forum';
-import { Post } from '../../types/types';
-import { getRisksForForum } from '../../models/regle';
+import { ContentQueueData, ContentQueuItem, Post } from '../../types/types';
+
 
 // Imports for the post-processing pipeline
-import { detectSpamMain } from '../post-processing/spam';
-import { resolveUserPolicy } from '../post-processing/policy';
-import { processLanguageMain } from '../post-processing/language';
-import { preprocessContentMain } from '../post-processing/preprocessor';
-import { callAiMain } from '../post-processing/inference';
+import { detectSpamMain } from '../content-processing/spam';
+import { processLanguageMain } from '../content-processing/language';
+import { preprocessContentMain } from '../content-processing/preprocessor';
+import { callAiMain } from '../content-processing/inference';
 import { divideList } from '../../utils/listUtils';
 
 
 // ! Verifier que les retry et les backoff sont bien configurés
 export const startAllWorkers = (whopClient: any , aiTransaltoreClient: any , aiModerationClients: any) => {
-    setupSchedulerWorker();
-    setupForumPollingWorker(whopClient);
-    setupPostProcessingWorker(aiTransaltoreClient , aiModerationClients);
-};
-
-// Worker for the scheduler queue
-export const setupSchedulerWorker = () => {
-    new Worker(
-
-        schedulerQueue.name,
-        async (job) => {
-            await forumPollingSchedulerWorker(job);
-        },
-        { connection : connectionRedis }
-
-
-    );
-    console.log(`Worker for queue ${schedulerQueue.name} started.`);
+  
+    setupContentProcessingWorker(aiTransaltoreClient , aiModerationClients);
 };
 
 
 
-//____________________________________________________________________________________________________________________
-//-Worker
-// Worker for the forum polling queue
 
 
 // Worker for the post processing queue
-export const setupPostProcessingWorker = (aiTransaltoreClient: any , aiModerationClients: any) => {
+export const setupContentProcessingWorker = (aiTransaltoreClient: any , aiModerationClients: any) => {
     new Worker(
         contentQueue.name,
         async (job: Job) => {
-            const { postList, forumId } = job.data as { postList: Post[], forumId: string };
-            console.log(`Processing post batch for forum ${forumId}. Batch size: ${postList.length}`);
-
+            const { contents, sourceId } = job.data as ContentQueueData;
+            console.log(`Processing post batch for forum ${sourceId}. Batch size: ${contents.length}`);
+            
             try {
                 // 1. Spam Detection
-                const spamResults = await detectSpamMain(postList , forumId);
-                console.log('Spam detection results:', spamResults);
-
-                // 2. User Policy Resolution
-                
-                const policy = await resolveUserPolicy(forumId, getRisksForForum , getFormByIdExperience);
-
-                // 3. Language Processing
-                const translatedPosts = await processLanguageMain(postList ,policy.formLanguage , forumId, aiTransaltoreClient);
-
-                // 4. ,  Content Preprocessing
-                const preprocessedPosts = await preprocessContentMain( forumId  , translatedPosts );
-
-                // 5. Prompt Building
-                const promptPayload = {
-                    forumId , 
-                    normalizedContents: preprocessedPosts,
-                    risks: policy.risks,
-                    forumContext: policy.formDescrition,
-                };
-                // const aiPrompt = await buildPrompt(promptPayload);
-                // console.log('AI prompt built.');
-
-                // 6. AI Inference
-                const aiResult = await callAiMain(promptPayload , aiModerationClients);
-                console.log('AI inference complete:', aiResult);
-                
-                if (job.opts.attempts) {
-                    if (job.attemptsMade + 1 >= job.opts.attempts) {
-                        
-                    }
-
-                }
-                // TODO: Send result to the next queue
-
+                processingPipline(job, contents, Number(sourceId) , aiTransaltoreClient , aiModerationClients);
+             
             } catch (error) {
-                console.error(`Error processing post batch for forum ${forumId}:`, error);
-                const [firstHalf, secondHalf] = divideList(postList); 
+                console.error(`Error processing post batch for forum ${sourceId}:`, error);
+                const [firstHalf, secondHalf] = divideList(contents); 
 
-                await contentQueue.add('processPost', { postList: firstHalf, forumId }, {
+                await contentQueue.add('processPost', { postList: firstHalf, sourceId }, {
                     attempts: 5,
                     backoff: { type: 'exponential', delay: 1000 },
                 });
-                await contentQueue.add('processPost', { postList: secondHalf, forumId }, {
+                await contentQueue.add('processPost', { postList: secondHalf, sourceId }, {
                     attempts: 5,
                     backoff: { type: 'exponential', delay: 1000 },
                 });
@@ -113,3 +57,57 @@ export const setupPostProcessingWorker = (aiTransaltoreClient: any , aiModeratio
     console.log(`Worker for queue ${contentQueue.name} started.`);
 };
 
+
+
+
+
+
+
+
+
+const processingPipline = async ( job: Job , contents:ContentQueuItem[], sourceId: number , aiTranslotorclient: any , aiModerationClients : any)  => {
+
+    // 1. Spam Detection
+    const spamResults = await detectSpamMain(contents, sourceId);
+    console.log('Spam detection results:', spamResults);
+
+    // 2. User Policy Resolution
+
+    // const policy = await resolveUserPolicy(forumId, getRisksForForum, getFormByIdExperience);
+    const mockPolicy = {
+        formDescrition: 'Mock forum description',
+        formLanguage: 'en',
+        risks :[
+
+        ]
+    }
+
+    // 3. Language Processing
+    const translatedPosts = await processLanguageMain(contents, mockPolicy.formLanguage, sourceId, aiTranslotorclient);
+
+    // 4. ,  Content Preprocessing
+    const preprocessedPosts = await preprocessContentMain(sourceId, translatedPosts);
+
+    // 5. Prompt Building
+    const promptPayload = {
+        sourceId,
+        normalizedContents: preprocessedPosts,
+        risks: mockPolicy.risks,
+        forumContext: mockPolicy.formDescrition,
+    };
+    // const aiPrompt = await buildPrompt(promptPayload);
+    // console.log('AI prompt built.');
+
+    // 6. AI Inference
+    // const aiResult = await callAiMain(promptPayload, aiModerationClients);
+    console.log('resultat final', promptPayload);
+
+    if (job.opts.attempts) {
+        if (job.attemptsMade + 1 >= job.opts.attempts) {
+            
+        }
+
+    }
+    // TODO: Send result to the next queue
+
+}

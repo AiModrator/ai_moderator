@@ -1,103 +1,92 @@
-import { PrismaClient } from '@prisma/client'
-
-export async function clearTestDatabase(prisma: PrismaClient) {
-  // 1. Supprimer les éléments sans dépendances circulaires complexes d'abord
-  await prisma.post.deleteMany(); // Dépend de Forum et User
-  await prisma.forum.deleteMany(); // Dépend de Company
-  await prisma.company.deleteMany(); // Dépend de User
-  await prisma.user.deleteMany(); // Racine
-  await prisma.$disconnect();
-}
+import prisma, { ContentSource, User } from "@moderator/database";
 
 
 
 
-/**
- * Insère un jeu de données minimal pour les tests.
- * L'ordre est inverse : du moins dépendant au plus dépendant (Top-down)
- */
-export async function seedTestDatabase(prisma: PrismaClient) {
-  // 1. Créer un Utilisateur
-  const user = await prisma.user.create({
-    data: {
-      id: "user-1",
-      username: "john_doe",
-      name: "John Doe",
-      created_at: new Date(),
-    }
-  });
 
-  // 2. Créer une Entreprise
-  const company = await prisma.company.create({
-    data: {
-      id: "comp-1",
-      title: "Tech Corp",
-      user_id: user.id,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }
-  });
 
-  // 3. Créer un Forum
-  const forum = await prisma.forum.create({
-    data: {
-      id: "forum-1",
-      experience_id: "exp-123",
-      experience_name: "General Discussion",
-      company_id: company.id,
-    }
-  });
 
-  // 4. Créer un Post
-  await prisma.post.create({
-    data: {
-      id: "post-1",
-      forum_id: forum.id,
-      user_id: user.id,
-      title: "Bienvenue",
-      content: "Ceci est le premier post de test",
-      created_at: new Date(),
-      updated_at: new Date(),
-    }
-  });
 
-  return { userId: user.id, companyId: company.id, forumId: forum.id };
-}
 
-export async function seedForums(prisma: PrismaClient) {
-    const user = await prisma.user.create({
-        data: {
-          id: "user-2",
-          username: "jane_doe",
-          name: "Jane Doe",
-          created_at: new Date(),
-        }
-      });
-    
-      const company = await prisma.company.create({
-        data: {
-          id: "comp-2",
-          title: "Creative Inc.",
-          user_id: user.id,
-          created_at: new Date(),
-          updated_at: new Date(),
-        }
-      });
 
-    await prisma.forum.createMany({
-      data: [
-        {
-          id: "forum-3",
-          experience_id: "exp-321",
-          experience_name: "General Discussion",
-          company_id: company.id,
-        },
-        {
-          id: "forum-4",
-          experience_id: "exp-654",
-          experience_name: "Support",
-          company_id: company.id,
-        },
-      ],
-    });
+
+
+
+export async function clearDatabase(): Promise<void> {
+  console.log("🧹 Début du nettoyage complet de la base de données...");
+
+  try {
+    // On utilise une transaction pour s'assurer que tout est supprimé ou rien du tout
+    await prisma.$transaction([
+      // 1. Supprimer les enfants d'abord (ceux qui dépendent des autres)
+      prisma.logs.deleteMany(),
+      prisma.content.deleteMany(),
+      
+      // 2. Supprimer les parents intermédiaires
+      prisma.apiKey.deleteMany(),
+      prisma.contentSource.deleteMany(),
+      
+      // 3. Supprimer les parents racines (User)
+      prisma.user.deleteMany(),
+    ]);
+
+    console.log("✅ Base de données vidée avec succès.");
+  } catch (error) {
+    console.error("❌ Erreur lors du nettoyage de la base de données :", error);
+    throw error;
   }
+}
+
+
+
+
+export async function checkDbConnection() {
+  try {
+    await prisma.$connect();
+    console.log('✅ Connexion à la base de données réussie via Prisma !');
+  } catch (error) {
+    console.error('❌ Impossible de se connecter à la base de données :', error);
+    throw error;
+  }
+}
+
+
+
+export async function createTestUser(data?: { email?: string; name?: string; }): Promise<User> {
+  console.log("   -> Entrée dans createTestUser");
+  
+  try {
+      const user = await prisma.user.create({
+        data: {
+          email: data?.email || `test-${Date.now()}@example.com`,
+          name: data?.name || "Test User",
+        },
+      });
+      console.log("   -> Utilisateur créé avec succès dans Prisma");
+      return user;
+  } catch (error) {
+      console.error("   -> ERREUR PRISMA DANS createTestUser :", error);
+      throw error;
+  }
+}
+
+
+
+
+export async function createTestContentSource(userId: number, data?: {
+  url?: string;
+  forumDescription?: string;
+  forumLanguage?: string;
+  is_default?: boolean;
+}): Promise<ContentSource> {
+  const contentSource = await prisma.contentSource.create({
+    data: {
+      url: data?.url || "https://example.com/forum",
+      forumDescription: data?.forumDescription || "Test Forum",
+      forumLanguage: data?.forumLanguage || "en",
+      is_default: data?.is_default ?? false,
+      id_user: userId,
+    },
+  });
+  return contentSource;
+}

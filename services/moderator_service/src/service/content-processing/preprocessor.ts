@@ -1,9 +1,8 @@
-import {postProcessingLogs} from '../../Logs/PostLogs';
+import { Phase, Steps } from '@moderator/database';
+import { logsWrapperFactory } from '../../utils/wrappers';
+import { TranslatedPost } from './language';
 
-interface TranslatedPost {
-    postId: string;
-    content: string;
-  }
+
 export  interface PreprocessedPost {
     postId: string;
     contentNormaliser: string;
@@ -56,18 +55,18 @@ export  interface PreprocessedPost {
       normalized = normalized.trim();
       
       return {
-        postId: post.postId,
+        postId: post.id,
         contentNormaliser: normalized,
       };
     });
   };
 
 
-  export const preprocessContentMain  = async ( formId : string  , 
+  export const preprocessContentMain  = async ( sourceId : number  , 
     translatedPosts: TranslatedPost[]
   ): Promise<PreprocessedPost[]> => {
 
-    const log = postProcessingLogs(formId, 'PROCESSING_CONTENT' );
+    const log =logsWrapperFactory(Phase.MODERATION, Steps.PROCESSING_SPAM, sourceId);
   const preprocessContentWithLogs =  log(preprocessContent);
   const response = await preprocessContentWithLogs(translatedPosts );
   return response ; 

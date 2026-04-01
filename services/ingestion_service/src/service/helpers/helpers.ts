@@ -15,8 +15,23 @@ export async function processNewPosts(
 
     const maxToken = 20 
     await contentScheduler(idSource, newContent, maxToken);
-    await updateSourceAfterPolling(idSource);
+    const mostRecentContentDate = getMostRecentDate(newContent);
+    await updateSourceAfterPolling(idSource , mostRecentContentDate) ;
 
+}
+
+
+
+
+
+ function getMostRecentDate(contents: any[]): Date  {
+  
+    // On transforme les dates en nombres (timestamps) pour trouver le maximum
+    const mostRecentTimestamp = Math.max(
+        ...contents.map(item => new Date(item.created_at).getTime())
+    );
+
+    return new Date(mostRecentTimestamp);
 }
 
 
@@ -28,39 +43,10 @@ function tokinizer(text: string):number {
 
 
 
-export function chunking(contents: string[], maxTokens: number) {
-    let classifiedPosts: string[][] = [];
-    let currentGroup: string[] = []; // On garde le groupe en cours en dehors de la boucle
-    let currentTokens = 0;
-
-    for (const content of contents) {
-        if (!content) continue;
-
-        const tokens = tokinizer(content);
-
-        // Si l'ajout du post dépasse la limite, on ferme le groupe actuel
-        if (currentTokens + tokens > maxTokens && currentGroup.length > 0) {
-            classifiedPosts.push(currentGroup);
-            currentGroup = []; // On recommence un nouveau groupe
-            currentTokens = 0;
-        }
-
-        // On ajoute le contenu au groupe actuel
-        currentGroup.push(content);
-        currentTokens += tokens;
-    }
-
-    // Très important : On n'oublie pas d'ajouter le dernier groupe s'il n'est pas vide
-    if (currentGroup.length > 0) {
-        classifiedPosts.push(currentGroup);
-    }
-
-    return classifiedPosts
-    
-}
 
 
-export function chunkingForPolling(contents: ContentItem[], maxTokens: number) {
+
+export function chunking(contents: ContentItem[], maxTokens: number) {
     let classifiedPosts: ContentItem[][] = []; // Tableau de groupes d'objets
     let currentGroup: ContentItem[] = []; 
     let currentTokens = 0;

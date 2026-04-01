@@ -1,6 +1,8 @@
+import { Phase, Steps } from "@moderator/database";
 import { AiModerationClient, AiModerationClients } from "../../types/types";
 import { PreprocessedPost } from "./preprocessor";
-import {postProcessingLogs} from '../../Logs/PostLogs';
+import { logsWrapperFactory } from "../../utils/wrappers";
+
 
   interface AIResponse {
     rawResponse: string;
@@ -15,6 +17,10 @@ import {postProcessingLogs} from '../../Logs/PostLogs';
                 const log = postProcessingLogs(promptPayload.formId, 'PROCESSING_AI_CALL');
                   const callAiWithLog =  log(callAI);
                   const aiResponse = await callAiWithLog(promptPayload , aiModerationClients)
+
+                  const log =logsWrapperFactory(Phase.MODERATION, Steps.PROCESSING_SPAM, 1);
+                    const preprocessContentWithLogs =  log(preprocessContent);
+                    const response = await preprocessContentWithLogs(translatedPosts )
                   return aiResponse
               }
 

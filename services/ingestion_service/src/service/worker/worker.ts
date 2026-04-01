@@ -62,10 +62,9 @@ async function pollContent(jobData: any, axiosFactory: any) {
         //TODO : Securite 
         // TODO : verifier si il ya une erreur 
        let   contents = await axiosFactory.getAxiosClient(contentUrl).getNewContent(contentUrl, contentLastPolledAt);
-        console.log('contents --->>>', contents);
+       
        
         if (contents.length === 0) {
-            await updateSourceAfterPolling(contentId);
             return;
         }
 

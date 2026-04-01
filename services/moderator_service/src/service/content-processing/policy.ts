@@ -1,4 +1,3 @@
-import { Forum } from "../../../../generated/browser";
 
 
 

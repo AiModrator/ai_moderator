@@ -135,3 +135,18 @@ export interface AiModerationClient extends AxiosInstance {
 export interface AiModerationClients {
   moderators: AiModerationClient[];
 }
+
+
+
+
+export type ContentQueuItem = { 
+	content :string , 
+	id : string | number  
+}
+
+
+
+export type ContentQueueData = { 
+	contents :ContentQueuItem[] , 
+	sourceId : number  
+}

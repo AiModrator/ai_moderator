@@ -40,11 +40,11 @@ export const getContentSourceToPoll = async (bashSize: number) => {
 
 
 
-export async function updateSourceAfterPolling(contentSourceId : number) {
+export async function updateSourceAfterPolling(contentSourceId : number , last_polled_at : Date) {
     return prisma.contentSource.update({
         where: { id: contentSourceId },
         data: {
-            last_polled_at: new Date(),
+            last_polled_at: last_polled_at,
             polling_failed: false,
             
         },

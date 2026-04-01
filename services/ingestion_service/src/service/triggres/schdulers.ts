@@ -61,21 +61,15 @@ export const startPollingScheduler = async () => {
 
 export async function contentScheduler(sourceId:number   ,  contents:any , maxTokens: number) {
     
-    const isForPolling = contents[0].content ? true : false ;
-    let  classifiedPosts ;
-    if (isForPolling) {
-        classifiedPosts= chunkingForPolling(contents , maxTokens) ;
-        
-    }else{
-       classifiedPosts = chunking(contents , maxTokens) ;
-    }
+    let  classifiedPosts = chunking(contents , maxTokens) ;
+    
     console.log('contents', contents);
     console.log('classifiedPosts', classifiedPosts);
    
    
-    for (const postList of classifiedPosts) {
+    for (const contents of classifiedPosts) {
         await contentQueue.add('processContent', {
-            postList: postList,
+            contents: contents,
             sourceId,
         });
     }
