@@ -1,7 +1,7 @@
 
-import { checkDbConnection } from "@moderator/database/prismaClient";
 
-import { clearDatabase, createTestContentSource, createTestUser } from "../utils/db";
+
+import { checkDbConnection, clearDatabase, createTestContentSource, createTestUser } from "../utils/db";
 import { addContentJobs, clearAllQueues } from "../utils/redis";
 
 import prisma, { ContentSource, User } from "@moderator/database";

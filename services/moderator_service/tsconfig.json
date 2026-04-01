@@ -3,10 +3,15 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "node",
-    "types": ["node"],
-    "strict": true ,
-     "allowSyntheticDefaultImports": true , 
-     "lib": ["ES2022", "DOM"] // "DOM" est nécessaire si tu es sur un navigateur
-
-  }
+    "types": ["node", "jest"],
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": ["ES2022"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist"]
 }

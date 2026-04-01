@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+
 import { setupMainTest } from "../setup/setup";
 import { addContentJobs } from "../utils/redis";
 import { setupContentProcessingWorker } from "../../src/service/worker/worker";
