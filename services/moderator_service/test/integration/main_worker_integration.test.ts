@@ -1,6 +1,6 @@
 
 import { setupMainTest } from "../setup/setup";
-import { addContentJobs } from "../utils/redis";
+import { addContentJobs, getAllItemsFromDecisionQueue } from "../utils/redis";
 import { setupContentProcessingWorker } from "../../src/service/worker/worker";
 import { sleep } from "../utils/utils";
 
@@ -20,6 +20,11 @@ describe("Main worker integration tests", () => {
         setupContentProcessingWorker(getMockTranslator() , getMockTranslator())
 
         await sleep(10000)
+        const jobs =  await getAllItemsFromDecisionQueue()
+        
+        expect(jobs).not.toHaveLength(0)
+
+
 
     })
 })

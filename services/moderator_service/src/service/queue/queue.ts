@@ -8,3 +8,4 @@ import { connectionRedis } from '../../config/redis';
 export const contentQueue = new Queue('contentQueue', { connection :connectionRedis });
 export const schedulerQueue = new Queue('schedulerQueue', { connection: connectionRedis });
 export const sourcePollingQueue = new Queue('sourcePollingQueue', { connection :connectionRedis });
+export const decisionQueue = new Queue('decisionQueue', { connection :connectionRedis });

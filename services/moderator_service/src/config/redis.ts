@@ -23,6 +23,9 @@ connectionRedis.on('connect', () => {
 });
 
 
+
+
+
 export async function checkRedisConnection() {
   try {
     // La commande 'ping' est le standard pour vérifier la santé de Redis

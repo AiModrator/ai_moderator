@@ -7,6 +7,7 @@ import { addContentJobs, clearAllQueues } from "../utils/redis";
 import prisma, { ContentSource, User } from "@moderator/database";
 import { ContentQueueData } from "../../src/types/types";
 import { getContentQueue } from "../mocks/mock";
+import { checkRedisConnection } from "../../src/config/redis";
 
 
 
@@ -23,12 +24,15 @@ export function setupMainTest(){
     contentSource: {} as ContentSource, 
     data  : {} as ContentQueueData
    }  ;  
+
+
    beforeEach(async ()=>{
 
     try{
-        checkDbConnection();
-        clearDatabase();
-        clearAllQueues() ;
+        await checkDbConnection();
+        await checkRedisConnection()
+        await clearDatabase();
+        await clearAllQueues() ;
 
 
         context.user = await createTestUser();
@@ -37,9 +41,10 @@ export function setupMainTest(){
         console.log("Creating Content Source...");
         context.contentSource = await createTestContentSource(context.user.id);
 
+        
         context.data = getContentQueue( context.contentSource.id);
 
-        
+
        
         
     } catch (error) {

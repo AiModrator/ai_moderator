@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import {   contentQueue } from '../queue/queue';
+import {   contentQueue, decisionQueue } from '../queue/queue';
 import { connectionRedis } from '../../config/redis';
 import { ContentQueueData, ContentQueuItem, Post } from '../../types/types';
 
@@ -74,33 +74,35 @@ const processingPipline = async ( job: Job , contents:ContentQueuItem[], sourceI
     // 2. User Policy Resolution
 
     // const policy = await resolveUserPolicy(forumId, getRisksForForum, getFormByIdExperience);
-    const mockPolicy = {
-        formDescrition: 'Mock forum description',
-        formLanguage: 'en',
-        risks :[
+    // const mockPolicy = {
+    //     formDescrition: 'Mock forum description',
+    //     formLanguage: 'en',
+    //     risks :[
 
-        ]
-    }
+    //     ]
+    // }
 
-    // 3. Language Processing
-    const translatedPosts = await processLanguageMain(contents, mockPolicy.formLanguage, sourceId, aiTranslotorclient);
+    // // 3. Language Processing
+    // const translatedPosts = await processLanguageMain(contents, mockPolicy.formLanguage, sourceId, aiTranslotorclient);
 
-    // 4. ,  Content Preprocessing
-    const preprocessedPosts = await preprocessContentMain(sourceId, translatedPosts);
+    // // 4. ,  Content Preprocessing
+    // const preprocessedPosts = await preprocessContentMain(sourceId, translatedPosts);
 
-    // 5. Prompt Building
-    const promptPayload = {
-        sourceId,
-        normalizedContents: preprocessedPosts,
-        risks: mockPolicy.risks,
-        forumContext: mockPolicy.formDescrition,
-    };
-    // const aiPrompt = await buildPrompt(promptPayload);
-    // console.log('AI prompt built.');
+    // // 5. Prompt Building
+    // const promptPayload = {
+    //     sourceId,
+    //     normalizedContents: preprocessedPosts,
+    //     risks: mockPolicy.risks,
+    //     forumContext: mockPolicy.formDescrition,
+    // };
+    // // const aiPrompt = await buildPrompt(promptPayload);
+    // // console.log('AI prompt built.');
 
-    // 6. AI Inference
-    // const aiResult = await callAiMain(promptPayload, aiModerationClients);
-    console.log('resultat final', promptPayload);
+    // // 6. AI Inference
+    // // const aiResult = await callAiMain(promptPayload, aiModerationClients);
+    // console.log('resultat final', promptPayload);
+
+
 
     if (job.opts.attempts) {
         if (job.attemptsMade + 1 >= job.opts.attempts) {
@@ -108,6 +110,13 @@ const processingPipline = async ( job: Job , contents:ContentQueuItem[], sourceI
         }
 
     }
+
+
+    decisionQueue.add('processDecision', {
+        spamResults
+    })
+
+
     // TODO: Send result to the next queue
 
 }

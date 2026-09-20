@@ -2,6 +2,11 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
 import { PrismaClient } from './generated/client.js';
+
+import dotenv from 'dotenv';
+
+dotenv.config(); // 2. Trop tard, l'objet prisma est déjà créé avec une erreur.
+
 const connectionString = `${process.env.DATABASE_URL}`;
 
 
@@ -17,6 +22,7 @@ const prisma = new PrismaClient({ adapter });
 export async function checkDbConnection() {
   try {
     await prisma.$connect();
+    
     console.log('✅ Connexion à la base de données réussie via Prisma !');
   } catch (error) {
     console.error('❌ Impossible de se connecter à la base de données :', error);

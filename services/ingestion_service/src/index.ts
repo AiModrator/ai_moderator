@@ -25,6 +25,7 @@ function main() {
         checkDbConnection();
         checkRedisConnection();
 
+        
         setupWebHooksRoutes(app)
 
         app.listen(3000, () => {

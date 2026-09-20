@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "test": "jest --config jest.config.cjs",
+    "test":   "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.cjs",
     "test:watch": "jest --config jest.config.cjs --watch",
     "test:integration": "jest --config jest.config.cjs test/integration",
     "test:unit": "jest --config jest.config.cjs --testPathIgnorePatterns=integration",

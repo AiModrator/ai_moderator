@@ -1,3 +1,4 @@
+import { Phase, Steps } from "@moderator/database/generated";
 import { insertLog } from "../models/logs";
 
 
@@ -16,7 +17,7 @@ import { insertLog } from "../models/logs";
 
 
 
-export  function logsWrapperFactory(step : any , phase : any , sourceId?: number  ){
+export  function logsWrapperFactory(step : Steps , phase : Phase , sourceId?: number  ){
 
     
     

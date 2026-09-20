@@ -1,4 +1,5 @@
-import { contentQueue, schedulerQueue, sourcePollingQueue } from "../../src/service/queue/queue";
+import { JobType } from "bullmq";
+import { contentQueue, decisionQueue, schedulerQueue, sourcePollingQueue } from "../../src/service/queue/queue";
 import { ContentQueuItem } from "../../src/types/types";
 
 
@@ -43,3 +44,21 @@ export async function addContentJobs(contents: ContentQueuItem[]  ,  sourceId: n
         });
     }
 }
+
+
+
+export async function getAllItemsFromDecisionQueue(): Promise<any[]> {
+
+  const jobsType: JobType[]  =  [
+  'active', 
+  'waiting', 
+  'completed', 
+  'failed', 
+  'delayed', 
+  'paused'
+]
+  const jobs = await decisionQueue.getJobs(jobsType);
+  const items = await Promise.all(jobs.map(job => job?.data));
+  return items;
+}
+

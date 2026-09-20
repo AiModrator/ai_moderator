@@ -5,6 +5,7 @@ import { connectionRedis } from '../../config/redis';
 import { logsWrapperFactory } from '../../utils/wrappers';
 import { Phase, Steps } from '@moderator/database';
 import { ContentQueuItem } from '../../types/types';
+import { stringify } from 'querystring';
 
 
 const postHashMap = new Map<string, string[]>();
@@ -18,7 +19,7 @@ const postHashMap = new Map<string, string[]>();
  */
 export const detectSpamMain = async (contents: ContentQueuItem[], sourceId: number): Promise<{ idContent: string; duplicateCount: number }[]> => {
 
-  const log = logsWrapperFactory(Phase.MODERATION, Steps.PROCESSING_SPAM, sourceId);
+  const log = logsWrapperFactory( Steps.PROCESSING_SPAM , Phase.MODERATION, sourceId);
   const detectSpamWithLogs = log(detectSpam);
   const spamResults = await detectSpamWithLogs(contents);
   return spamResults;
@@ -52,13 +53,13 @@ async function spamValidator(contentItem: ContentQueuItem): Promise<{ idContent:
     if (stockedContent.contentHasher === hashContent) {
       await connectionRedis.hset(key, 'retry', stockedContent.retry + 1);
       return {
-        idContent: contentItem.id,
+        idContent: `${contentItem.id}`  ,
         duplicateCount: Number(stockedContent.retry) + 1
       }
     }
 
   }
-  const key = "post:" + contentItem.id;
+  const key = "post:" + contentItem.id; 
 
 
   await connectionRedis.hset(key, {
@@ -66,9 +67,9 @@ async function spamValidator(contentItem: ContentQueuItem): Promise<{ idContent:
     retry: 0
   });
   // Expire le post apres 1 jour
-  await connectionRedis.expire(contentItem.id, 1 * 24 * 60 * 60);
+  await connectionRedis.expire(key, 1 * 24 * 60 * 60);
   return {
-    idContent : contentItem.id,
+    idContent :`${contentItem.id}`,
     duplicateCount: 1
   }
 }
