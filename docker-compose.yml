@@ -1,16 +1,95 @@
-version: '3.8'
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-moderator-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_moderator}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
   redis:
     image: redis:alpine
     container_name: bullmq-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - backend
+
+  ingestion_service:
+    build:
+      context: .
+      dockerfile: services/ingestion_service/Dockerfile
+    container_name: ingestion_service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/ai_moderator}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "3000:3000"
+    networks:
+      - backend
+
+  action_service:
+    build:
+      context: .
+      dockerfile: services/action_service/Dockerfile
+    container_name: action_service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/ai_moderator}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "3001:3001"
+    networks:
+      - backend
+
+  moderation_service:
+    build:
+      context: ./moderation_service
+    container_name: moderation_service
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "8000:8000"
+    networks:
+      - backend
+
+  ai_gateway:
+    build:
+      context: ./ai-gateway
+    container_name: ai_gateway
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
 
 volumes:
+  pgdata:
   redis_data:
-
-
-
-
