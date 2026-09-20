@@ -28,7 +28,7 @@
     "vitest": "^4.1.1"
   },
   "dependencies": {
-    "@moderator/database": "^1.0.0",
+    "@ai-moderator/database": "^1.0.0",
     "axios": "^1.13.6",
     "bullmq": "^5.71.0",
     "express": "^5.2.1",

@@ -1,5 +1,5 @@
 
-import prisma from '@moderator/database'
+import prisma from '@ai-moderator/database'
 
 
 

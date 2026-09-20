@@ -4,7 +4,7 @@
 
 
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
-import prisma, { Phase, Steps } from "@moderator/database";
+import prisma, { Phase, Steps } from "@ai-moderator/database";
 import { insertLog } from '../../src/models/logs';
 import { logsWrapperFactory } from '../../src/utils/wrappers';
 

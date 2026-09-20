@@ -5,9 +5,10 @@
   "main": "index.js",
 
   "workspaces": [
-    "services/*",
-    "database"
-  ] , 
+    "database",
+    "services/ingestion_service",
+    "services/action_service"
+  ], 
 
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

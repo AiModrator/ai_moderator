@@ -1,4 +1,4 @@
-import prisma from "@moderator/database";
+import prisma from "@ai-moderator/database";
 
 
 export async function insertLog(phase: any, step: any, duration: number, sourceId?: number, error?: string) {

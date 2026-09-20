@@ -7,7 +7,7 @@
     "rootDir": "./src",             /* Force la structure à partir de src */
     "baseUrl": ".",
     "paths": {
-      "@moderator/database": ["../../database/index.ts"]
+      "@ai-moderator/database": ["../../database/index.ts"]
     },
     "types": ["node"],
     "strict": true,

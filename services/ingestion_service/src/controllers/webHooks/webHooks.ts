@@ -5,7 +5,7 @@ import express from 'express';
 
 import { validateApiKey } from "../middlewars/auth.js";
 import { getSource, validateData } from "../middlewars/validator.js";
-import { Phase, Steps } from "@moderator/database";
+import { Phase, Steps } from "@ai-moderator/database";
 
 
 

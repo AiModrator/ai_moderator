@@ -1,6 +1,6 @@
 import { beforeAll } from 'vitest'
 import { clearContentQueue, createTestApiKey, createTestContentSource, createTestUser } from './index.js'
-import prisma, { ApiKey, User, ContentSource } from '@moderator/database';
+import prisma, { ApiKey, User, ContentSource } from '@ai-moderator/database';
 import { clearDatabase } from './models.js';
 import { mock } from 'node:test';
 import { get } from 'node:http';

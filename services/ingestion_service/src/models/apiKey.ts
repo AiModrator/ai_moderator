@@ -1,5 +1,5 @@
-import prisma from '@moderator/database'
-import { User } from '@moderator/database'
+import prisma from '@ai-moderator/database'
+import { User } from '@ai-moderator/database'
 
 
 export const getApiKeyByKey = async (key : string) => {

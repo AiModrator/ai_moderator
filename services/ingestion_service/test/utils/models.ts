@@ -1,4 +1,4 @@
-import prisma , {  ApiKey, ContentSource, User } from "@moderator/database"
+import prisma , {  ApiKey, ContentSource, User } from "@ai-moderator/database"
 import { hashApiKey  , generateSecureApiKey} from "../../src/utils/hash";
 
 /**
