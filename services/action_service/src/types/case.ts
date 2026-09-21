@@ -7,6 +7,9 @@ import type { ContentAction, RiskClass, UserAction } from '@ai-moderator/databas
 import type { Decision, VerdictDetection, VerdictStatus } from './verdict.js';
 import type { FilterStatus } from './job.js';
 
+export const MODERATION_CASES_COLLECTION = 'moderation_cases';
+export const USER_ACTIONS_COLLECTION = 'user_actions';
+
 export type CallbackStatus = 'pending' | 'delivered' | 'failed';
 
 export interface CallbackInfo {

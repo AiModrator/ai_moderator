@@ -4,6 +4,10 @@
  */
 
 import { MongoClient, type Db } from 'mongodb';
+import {
+  MODERATION_CASES_COLLECTION,
+  USER_ACTIONS_COLLECTION,
+} from '../types/case.js';
 
 export interface MongoConfig {
   mongodbUri: string;
@@ -41,6 +45,23 @@ export class MongoStore {
   async ping(): Promise<void> {
     const db = await this.connect();
     await db.command({ ping: 1 });
+  }
+
+  /**
+   * Index D-02 (main.md §6) :
+   * - `moderation_cases` : unique `moderationCaseId`, `{communityRef, createdAt:-1}`, `{userRef, createdAt:-1}` ;
+   * - `user_actions` : `{communityRef, userRef, createdAt:-1}`.
+   */
+  async ensureIndexes(): Promise<void> {
+    const db = await this.connect();
+
+    const cases = db.collection(MODERATION_CASES_COLLECTION);
+    await cases.createIndex({ moderationCaseId: 1 }, { unique: true });
+    await cases.createIndex({ communityRef: 1, createdAt: -1 });
+    await cases.createIndex({ userRef: 1, createdAt: -1 });
+
+    const actions = db.collection(USER_ACTIONS_COLLECTION);
+    await actions.createIndex({ communityRef: 1, userRef: 1, createdAt: -1 });
   }
 
   async close(): Promise<void> {
