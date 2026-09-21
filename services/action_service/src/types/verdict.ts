@@ -29,3 +29,30 @@ export interface Verdict {
   userActions: UserAction[];
   needsReview: boolean;
 }
+
+/**
+ * Corps du callback (§7, spec fonctionnelle §7.1) : verdict sans
+ * `needsReview` (ni `filtersReport`, absent du verdict). Rétro-compatible
+ * avec la spec (ajouts : `detections[].sources` + `score`).
+ */
+export interface CallbackPayload {
+  moderationCaseId: string;
+  contentId: string;
+  status: VerdictStatus;
+  decision: Decision;
+  detections: VerdictDetection[];
+  contentActions: ContentAction[];
+  userActions: UserAction[];
+}
+
+export function toCallbackPayload(verdict: Verdict): CallbackPayload {
+  return {
+    moderationCaseId: verdict.moderationCaseId,
+    contentId: verdict.contentId,
+    status: verdict.status,
+    decision: verdict.decision,
+    detections: verdict.detections,
+    contentActions: verdict.contentActions,
+    userActions: verdict.userActions,
+  };
+}
