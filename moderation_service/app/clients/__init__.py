@@ -1,0 +1,1 @@
+"""Paquet des clients externes."""
