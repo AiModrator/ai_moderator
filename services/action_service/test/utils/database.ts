@@ -64,7 +64,7 @@ export async function seedCommunity(options: SeedCommunityOptions = {}): Promise
   });
 
   let workflowId: string | null = null;
-  const hasWorkflow = (options.rules && options.rules.length > 0) || options.thresholds !== undefined;
+  const hasWorkflow = options.rules !== undefined || options.thresholds !== undefined;
 
   if (hasWorkflow) {
     const workflow = await prisma.workflow.create({
