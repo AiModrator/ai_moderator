@@ -1,0 +1,43 @@
+# Lexique SCAM — seed FR+EN (Tâche 04)
+free money|0.65
+crypto giveaway|0.70
+double your money|0.75
+investment opportunity|0.60
+guaranteed profit|0.70
+500 usd per day|0.70
+earn from home|0.60
+quick cash|0.65
+get rich|0.65
+money tree|0.65
+urgent transfer|0.65
+invoice due|0.55
+verify your account|0.60
+account suspended|0.60
+you have won|0.65
+claim your prize|0.65
+wire transfer|0.60
+western union|0.55
+nigerian prince|0.75
+bitcoin address|0.60
+lottery winner|0.70
+investment scheme|0.65
+pyramid scheme|0.70
+gagnez de l'argent|0.65
+argent facile|0.65
+investissez|0.55
+gain garanti|0.70
+profitez maintenant|0.50
+vérifiez votre compte|0.60
+compte suspendu|0.60
+vous avez gagné|0.65
+retrait urgent|0.65
+héritage|0.60
+prince nigérian|0.75
+racket|0.60
+escroquerie|0.55
+arnaque|0.60
+faux artisan|0.60
+business lucratif|0.60
+plan d'investissement|0.65
+re:g[e3]t r[i1]ch|0.65
+re:g[o0]ld plan|0.55

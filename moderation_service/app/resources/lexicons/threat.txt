@@ -1,0 +1,36 @@
+# Lexique THREAT — seed FR+EN (Tâche 04)
+kill you|0.65
+killing you|0.70
+i will kill|0.70
+i'll kill|0.70
+i'm going to kill|0.75
+i am going to kill|0.75
+shoot you|0.65
+i will shoot|0.70
+bomb|0.65
+murder you|0.70
+you're dead|0.60
+you are dead|0.60
+you will die|0.65
+beat you up|0.60
+i'll hurt you|0.65
+i will hurt you|0.65
+stab you|0.65
+i'll stab you|0.70
+i will stab you|0.70
+die|0.45
+kill yourself|0.75
+je vais te tuer|0.75
+je te tue|0.70
+je vais te crever|0.75
+tu vas mourir|0.70
+je te bute|0.75
+ta mort|0.60
+je vais te frapper|0.65
+je vais te défoncer|0.70
+je vais te régler|0.65
+menace de mort|0.70
+je connais ton adresse|0.70
+je vais te trouver|0.65
+re:(?:I'?ll )?k[i1]ll y[o0]u|0.70
+re:je vais te tu[e3]r|0.70

@@ -1,0 +1,35 @@
+# Lexique HATE_SPEECH — seed FR+EN (Tâche 04)
+nigger|0.80
+nigga|0.75
+faggot|0.80
+dyke|0.65
+kike|0.80
+tranny|0.70
+chink|0.75
+spic|0.75
+wetback|0.75
+beaner|0.75
+gook|0.75
+raghead|0.75
+retard|0.65
+subhuman|0.65
+white trash|0.55
+heil hitler|0.85
+nazi|0.60
+hitler|0.65
+jew|0.55
+muslim scum|0.75
+sale arabe|0.75
+sale juif|0.75
+sale noir|0.75
+sale blanc|0.60
+sale pédé|0.75
+bougnoule|0.80
+youpin|0.80
+négro|0.75
+raclure|0.60
+nique ta race|0.85
+sale nègre|0.80
+putain de pédé|0.75
+re:[s5]ieg h[e3]il|0.85
+re:h[i1]tler|0.65

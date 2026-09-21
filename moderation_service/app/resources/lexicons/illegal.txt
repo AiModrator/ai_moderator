@@ -1,0 +1,41 @@
+# Lexique ILLEGAL — seed FR+EN (Tâche 04)
+cocaine|0.65
+crack|0.65
+heroin|0.65
+meth|0.65
+weed|0.45
+marijuana|0.50
+cannabis|0.45
+mdma|0.60
+ecstasy|0.55
+lsd|0.55
+pills|0.45
+ketamine|0.60
+fentanyl|0.70
+stolen|0.55
+steal|0.50
+robbery|0.55
+fraud|0.55
+counterfeit|0.60
+fake id|0.60
+fake passport|0.65
+stolen credit card|0.70
+dark web|0.65
+hacking|0.55
+ddos|0.55
+kidnapping|0.65
+trafiquer|0.55
+drogue|0.50
+trafic|0.55
+recel|0.55
+meurtre|0.60
+tueur|0.60
+braquage|0.60
+vol avec effraction|0.65
+carte volée|0.65
+carte bancaire volée|0.70
+drogues dures|0.65
+vendre de la drogue|0.65
+falsification|0.55
+cambriolage|0.60
+re:c[a]?rte vol[eé]e|0.65

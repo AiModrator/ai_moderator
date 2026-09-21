@@ -1,0 +1,39 @@
+# Lexique VIOLENCE — seed FR+EN (Tâche 04)
+punch|0.55
+punching|0.55
+hit him|0.50
+hit her|0.50
+slap|0.50
+fight|0.45
+fighting|0.45
+stabbed|0.60
+blood|0.50
+bloody|0.50
+beat down|0.55
+assault|0.55
+strangle|0.60
+burn|0.55
+burning|0.55
+torture|0.65
+mutilate|0.65
+fracture|0.50
+dogfight|0.55
+war|0.45
+brutal|0.50
+violence|0.45
+kicking|0.55
+punch him|0.55
+fight someone|0.50
+bagarre|0.45
+coup de poing|0.55
+frappe-le|0.55
+frappe-la|0.55
+saigner|0.55
+sang|0.45
+tabasser|0.60
+découper|0.60
+casser la gueule|0.65
+casser les dents|0.65
+se battre|0.45
+battre quelqu'un|0.50
+roast|0.45

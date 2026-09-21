@@ -1,0 +1,39 @@
+# Lexique INSULT — seed FR+EN (Tâche 04)
+idiot|0.45
+stupid|0.45
+dumb|0.40
+moron|0.50
+imbecile|0.50
+jackass|0.50
+asshole|0.55
+bitch|0.55
+bastard|0.55
+jerk|0.40
+fool|0.40
+dork|0.35
+loser|0.40
+scumbag|0.55
+cretin|0.45
+piece of shit|0.60
+son of a bitch|0.60
+fucker|0.55
+connard|0.55
+connasse|0.55
+con|0.45
+abrut|0.50
+crétin|0.50
+imbécile|0.50
+débile|0.50
+sac à merde|0.60
+trou du cul|0.60
+enculé|0.60
+salope|0.55
+pute|0.55
+grosse merde|0.55
+nique ta mère|0.65
+ta gueule|0.45
+branleur|0.50
+merdeux|0.45
+abruti|0.50
+re:st[u4]pid|0.50
+re:[s5]al[o0]pe|0.55

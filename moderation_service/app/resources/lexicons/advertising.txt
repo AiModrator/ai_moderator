@@ -1,0 +1,38 @@
+# Lexique ADVERTISING — seed FR+EN (Tâche 04)
+buy now|0.55
+order now|0.55
+limited offer|0.55
+click here|0.40
+free gift|0.50
+discount|0.40
+promo code|0.45
+subscribe|0.40
+follow me|0.40
+dm me|0.45
+link in bio|0.50
+affordable price|0.45
+best price|0.45
+limited time|0.50
+hurry up|0.45
+act now|0.50
+don't miss|0.45
+win a prize|0.55
+bonus offer|0.50
+check out my|0.45
+new product|0.45
+full video|0.45
+achetez maintenant|0.55
+promo|0.40
+réduction|0.40
+offre spéciale|0.50
+offre limitée|0.50
+clique ici|0.40
+abonne-toi|0.45
+gratuit|0.45
+cadeau|0.45
+publicité|0.40
+dernière chance|0.45
+tarif imbattable|0.45
+en promotion|0.45
+re:buy n[o0]w|0.55
+re:cl[i1]quer ici|0.40

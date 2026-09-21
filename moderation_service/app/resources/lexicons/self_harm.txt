@@ -1,0 +1,35 @@
+# Lexique SELF_HARM — seed FR+EN (Tâche 04)
+cut myself|0.70
+cutting myself|0.70
+i want to die|0.75
+don't want to live|0.70
+kill myself|0.80
+killing myself|0.80
+suicide|0.75
+suicidal|0.75
+overdose|0.65
+self harm|0.70
+self-harm|0.70
+no reason to live|0.70
+end it all|0.65
+jump off a bridge|0.70
+hang myself|0.80
+slit my wrists|0.85
+cutting|0.60
+i hate myself|0.60
+worthless|0.55
+i deserve to die|0.75
+take my own life|0.75
+ending my life|0.75
+je veux mourir|0.80
+je vais mourir|0.70
+m'ouvrir les veines|0.85
+me pendre|0.80
+me jeter du pont|0.70
+en finir|0.65
+plus envie de vivre|0.75
+me suicider|0.80
+suicider|0.75
+je me déteste|0.60
+personne ne me regrettera|0.75
+je ne veux plus vivre|0.75

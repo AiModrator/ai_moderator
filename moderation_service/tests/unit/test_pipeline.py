@@ -8,16 +8,28 @@ from app.core.pipeline import PipelineBuilder
 from app.schemas.enums import RiskClass
 from tests.fixtures.filters import (
     AlwaysDetectFilter,
+    BatchDetectFilter,
+    FailOnceThenSucceedFilter,
+    PermanentFailFilter,
+    SkipFilter,
+    SlowFilter,
 )
 
-# Outlook du registre (fixtures déjà importées) :
-# AlwaysDetectFilter -> TOXICITY, PermanentFailFilter -> SEXUAL,
-# FailOnceThenSucceedFilter -> INSULT, SkipFilter -> ADVERTISING, SlowFilter -> VIOLENCE, BatchDetectFilter -> SCAM
+# Registre isolé : les fixtures uniquement (le registre global contient aussi
+# les filtres réels SpamFilter/LinkFilter/LexiconFilter).
+FIXTURES = [
+    AlwaysDetectFilter,  # TOXICITY
+    PermanentFailFilter,  # SEXUAL
+    FailOnceThenSucceedFilter,  # INSULT
+    SkipFilter,  # ADVERTISING
+    SlowFilter,  # VIOLENCE
+    BatchDetectFilter,  # SCAM
+]
 
 
 @pytest.mark.unit
 def test_build_selects_only_matching_filters() -> None:
-    builder = PipelineBuilder()
+    builder = PipelineBuilder(registry=FIXTURES)
     pipeline, targets = builder.build([RiskClass.TOXICITY, RiskClass.SEXUAL])
     names = {cls.NAME for cls in pipeline}
     assert names == {"AlwaysDetectFilter", "PermanentFailFilter"}
@@ -27,7 +39,7 @@ def test_build_selects_only_matching_filters() -> None:
 
 @pytest.mark.unit
 def test_build_excludes_filters_with_empty_intersection() -> None:
-    builder = PipelineBuilder()
+    builder = PipelineBuilder(registry=FIXTURES)
     # Aucune classe ne croise ADVERTISING (SkipFilter) ni SCAM (BatchDetectFilter)
     pipeline, _ = builder.build([RiskClass.TOXICITY, RiskClass.INSULT])
     names = {cls.NAME for cls in pipeline}
@@ -38,7 +50,7 @@ def test_build_excludes_filters_with_empty_intersection() -> None:
 
 @pytest.mark.unit
 def test_build_disabled_filters_absent() -> None:
-    builder = PipelineBuilder()
+    builder = PipelineBuilder(registry=FIXTURES)
     pipeline, _ = builder.build(
         [RiskClass.TOXICITY, RiskClass.SEXUAL],
         disabled={"PermanentFailFilter"},
@@ -50,7 +62,7 @@ def test_build_disabled_filters_absent() -> None:
 
 @pytest.mark.unit
 def test_build_computes_target_intersection() -> None:
-    builder = PipelineBuilder()
+    builder = PipelineBuilder(registry=FIXTURES)
     # FailOnceThenSucceedFilter gère INSULT ; actif avec d'autres classes
     pipeline, targets = builder.build([RiskClass.INSULT, RiskClass.TOXICITY, RiskClass.ADVERTISING])
     assert {c.NAME for c in pipeline} == {
@@ -65,7 +77,7 @@ def test_build_computes_target_intersection() -> None:
 
 @pytest.mark.unit
 def test_build_contexts() -> None:
-    builder = PipelineBuilder()
+    builder = PipelineBuilder(registry=FIXTURES)
     pipeline, targets = builder.build([RiskClass.TOXICITY])
     assert pipeline
     contexts = builder.build_contexts("b-1", "c-A", attempt=2, targets=targets)

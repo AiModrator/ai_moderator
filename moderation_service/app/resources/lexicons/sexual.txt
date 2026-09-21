@@ -1,0 +1,36 @@
+# Lexique SEXUAL — seed FR+EN (Tâche 04)
+rape|0.70
+raped|0.70
+porn|0.55
+pornhub|0.60
+sex tape|0.60
+sexe|0.50
+baise|0.55
+suck my dick|0.65
+blowjob|0.60
+fellatio|0.60
+dick|0.50
+cock|0.55
+pussy|0.55
+clit|0.55
+cum|0.55
+sperm|0.55
+dildo|0.55
+vibrator|0.55
+milf|0.50
+bdsm|0.55
+pornographie|0.55
+branlette|0.55
+chatte|0.55
+bite|0.50
+nude|0.55
+sexting|0.60
+onlyfans|0.60
+massage érotique|0.55
+poitrine nue|0.55
+seins nus|0.55
+encule|0.60
+sodomie|0.55
+pédophilie|0.80
+re:p[o0]rn|0.55
+re:cum|0.55
