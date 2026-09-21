@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 
 from app.config.redis import create_redis
 from app.config.settings import Settings
+from app.core.publisher import build_queue
 
 
 @pytest.fixture(scope="session")
@@ -24,3 +25,23 @@ async def redis_client(settings: Settings) -> Redis:
     client = create_redis(settings)
     yield client
     await client.aclose()
+
+
+@pytest.fixture()
+async def content_queue(settings: Settings):
+    """Queue BullMQ `contentQueue` réelle, préfixée `test:` et vidée entre les tests."""
+    queue = build_queue(settings.content_queue_name, settings)
+    await queue.drain()
+    yield queue
+    await queue.drain()
+    await queue.close()
+
+
+@pytest.fixture()
+async def decision_queue(settings: Settings):
+    """Queue BullMQ `decisionQueue` réelle, préfixée `test:` et vidée entre les tests."""
+    queue = build_queue(settings.decision_queue_name, settings)
+    await queue.drain()
+    yield queue
+    await queue.drain()
+    await queue.close()

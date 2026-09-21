@@ -160,6 +160,11 @@ class BatchState:
         state.detections = list(outcome.detections)
         state.last_error = outcome.error
 
+    def set_many(self, filter_name: str, outcomes: list[FilterOutcome]) -> None:
+        """Applique une liste d'outcomes (§6.3). Sans effet si vide."""
+        for outcome in outcomes:
+            self.set(filter_name, outcome)
+
     def mark_transient(self, filter_name: str, content_id: str, error_obj: Exception) -> None:
         """Erreur transitoire : PENDING_RETRY (ou UNAVAILABLE si retries épuisés)."""
         state = self._item(filter_name, content_id)

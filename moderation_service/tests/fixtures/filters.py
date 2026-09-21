@@ -113,6 +113,9 @@ class SkipFilter(ItemFilter):
     def is_applicable(self, item: ContentItem) -> bool:
         return False
 
+    async def evaluate(self, item: ContentItem, ctx: FilterContext) -> FilterOutcome:
+        raise RuntimeError("SkipFilter must never be evaluated (is_applicable = False)")
+
 
 @register_filter
 class SlowFilter(ItemFilter):
