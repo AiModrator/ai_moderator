@@ -1,12 +1,16 @@
 {
   "name": "action_service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Action Service — décisions de modération (score → sévérité → actions), historique D-02, callback client",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsx src/index.ts",
+    "test": "vitest",
+    "test:unit": "vitest run --tagsFilter unit",
+    "test:integration": "vitest run --tagsFilter integration",
+    "test:e2e": "vitest run --tagsFilter e2e",
     "build": "tsc"
   },
   "keywords": [],
@@ -14,15 +18,25 @@
   "license": "ISC",
   "dependencies": {
     "@ai-moderator/database": "^1.0.0",
+    "axios": "^1.13.6",
     "bullmq": "^5.71.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "ioredis": "^5.9.3"
+    "ioredis": "^5.9.3",
+    "mongodb": "^7.6.0",
+    "pino": "^10.3.1",
+    "uuid": "^14.0.2",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
+    "@types/supertest": "^7.2.0",
+    "@types/uuid": "^11.0.0",
+    "pino-pretty": "^13.1.3",
+    "supertest": "^7.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.1"
   }
 }

@@ -95,10 +95,29 @@ model Workflow {
   communityId String @unique
   name        String
 
-  community Community @relation(fields: [communityId], references: [id])
-  rules     Rule[]
+  community  Community    @relation(fields: [communityId], references: [id])
+  rules      Rule[]
+  thresholds Threshold[]
 
   @@map("workflows")
+}
+
+/// Seuils de sévérité par classe pour un workflow (gérés par l'Action Service).
+/// Un profil = un couple (workflow, classe). Bornes 0 ≤ low ≤ medium ≤ high ≤ critical ≤ 1.
+model Threshold {
+  id         String     @id @default(uuid())
+  workflowId String
+  riskClass  RiskClass
+  low        Float      @default(0.25)
+  medium     Float      @default(0.50)
+  high       Float      @default(0.75)
+  critical   Float      @default(1.00)
+  updatedAt  DateTime   @updatedAt
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, riskClass])
+  @@map("thresholds")
 }
 
 /// Une règle = une combinaison classe + seuil, déclenchant 1..n actions.

@@ -5,6 +5,7 @@ import {
   ApiKey as ApiKeyModel,
   Workflow as WorkflowModel,
   Rule as RuleModel,
+  Threshold as ThresholdModel,
   $Enums,
 } from './generated/client.js';
 
@@ -16,6 +17,7 @@ export type Community = CommunityModel;
 export type ApiKey = ApiKeyModel;
 export type Workflow = WorkflowModel;
 export type Rule = RuleModel;
+export type Threshold = ThresholdModel;
 
 export type RiskClass = $Enums.RiskClass;
 export type Severity = $Enums.Severity;
