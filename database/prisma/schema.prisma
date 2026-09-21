@@ -1,105 +1,117 @@
 generator client {
-  provider = "prisma-client-js" // Correction ici
+  provider = "prisma-client-js"
   output   = "../generated"
 }
 
 datasource db {
   provider = "postgresql"
-
 }
 
-model User {
-  id             Int             @id @default(autoincrement())
-  email          String          @unique
-  name           String?
-  
+/// Classes de risque détectées (canonique : @ai-moderator/database)
+/// Miroir indispensable dans moderation_service (Python) et ai-gateway (Python).
+enum RiskClass {
+  SPAM
+  SCAM
+  PHISHING
+  MALICIOUS_LINK
+  ADVERTISING
+  TOXICITY
+  INSULT
+  HARASSMENT
+  HATE_SPEECH
+  THREAT
+  VIOLENCE
+  SEXUAL
+  SELF_HARM
+  ILLEGAL
+  OFF_TOPIC
+}
 
+/// Échelle de sévérité (ordre strict : LOW < MEDIUM < HIGH < CRITICAL)
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
 
-  contentSources ContentSource[] @relation("UserContent")
-  apiKeys        ApiKey[]
-  @@map("users")
+/// Sanctions applicables au contenu
+enum ContentAction {
+  ALLOW
+  HIDE_POST
+  DELETE_POST
+  EDIT_POST
+  LOCK_POST
+  REMOVE_ATTACHMENT
+  FLAG_FOR_REVIEW
+}
+
+/// Sanctions applicables à l'utilisateur
+enum UserAction {
+  NONE
+  WARN_USER
+  MUTE_USER
+  TIMEOUT_USER
+  BAN_USER
+  TEMP_BAN_USER
+}
+
+model Account {
+  id          String      @id @default(uuid())
+  email       String      @unique
+  communities Community[]
+
+  @@map("accounts")
+}
+
+model Community {
+  id          String    @id @default(uuid())
+  accountId   String
+  name        String
+  isDefault   Boolean   @default(false)
+  callbackUrl String
+
+  account  Account   @relation(fields: [accountId], references: [id])
+  apiKeys  ApiKey[]
+  workflow Workflow?
+
+  @@map("communities")
 }
 
 model ApiKey {
-  id      Int     @id @default(autoincrement())
-  key     String  @unique
-  disabled Boolean
+  id          String    @id @default(uuid())
+  communityId String
+  hashedKey   String    @unique
+  revokedAt   DateTime?
 
-  user_id Int
-
-  user    User     @relation(fields: [user_id], references: [id])
+  community Community @relation(fields: [communityId], references: [id])
 
   @@map("api_keys")
 }
 
+/// Une communauté = un workflow actif (Workflow.communityId unique).
+model Workflow {
+  id          String @id @default(uuid())
+  communityId String @unique
+  name        String
 
+  community Community @relation(fields: [communityId], references: [id])
+  rules     Rule[]
 
-
-model ContentSource {
-  id                    Int           @id @default(autoincrement())
-  desc                  String?
-  forumDescription      String
-  forumLanguage         String
-  is_default             Boolean        @default(false)
-
-  last_polled_at        DateTime?
-  polling_failed        Boolean       @default(false)
-  last_polling_error    String?
-  url                   String?
-
-  id_user               Int
-  user                  User          @relation("UserContent", fields: [id_user], references: [id])
-  contents              Content[]
-  logs           Logs[]
-
-  @@map("content_source")
+  @@map("workflows")
 }
 
-model Content {
-  id         String   @id // Attention: assure-toi que l'ID externe est unique
-  source_id  Int
-  content    String?
-  created_at DateTime
+/// Une règle = une combinaison classe + seuil, déclenchant 1..n actions.
+model Rule {
+  id             String          @id @default(uuid())
+  workflowId     String
+  riskClass      RiskClass
+  severity       Severity
+  contentActions ContentAction[]
+  userActions    UserAction[]
 
-  contentSource ContentSource @relation(fields: [source_id], references: [id])
+  workflow Workflow @relation(fields: [workflowId], references: [id])
 
-  @@map("contents")
+  @@unique([workflowId, riskClass, severity])
+  @@map("rules")
 }
-
-enum Steps {
-
-  WEBHOOK 
-  POLLING 
-
-  PROCESSING_SPAM
-  PROCESSING_TRANSLATION
-  PROCESSING_CONTENT
-  PROCESSING_AI_CALL
-}
-
-
-enum Phase{
-
-   INGESTION
-   MODERATION
-}
-
-
-model Logs {
-  id          Int              @id @default(autoincrement()) // Correction ici ()
-  phase       Phase
-  step       Steps
-  source_id  Int?
-  duration_ms Float
-  error       String?
-  created_at  DateTime         @default(now())
-
-
-  
-  contentSource ContentSource? @relation(fields: [source_id], references: [id])
-
-  @@map("logs")
-
-}
-
-

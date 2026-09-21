@@ -6,9 +6,6 @@
     "outDir": "./dist",            /* Dossier de sortie indispensable */
     "rootDir": "./src",             /* Force la structure à partir de src */
     "baseUrl": ".",
-    "paths": {
-      "@ai-moderator/database": ["../../database/index.ts"]
-    },
     "types": ["node"],
     "strict": true,
     "declaration": true,
