@@ -25,6 +25,17 @@ services:
     networks:
       - backend
 
+  mongo:
+    image: mongo:7
+    container_name: ai-moderator-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - backend
+
   ingestion_service:
     build:
       context: .
@@ -52,10 +63,14 @@ services:
     depends_on:
       - postgres
       - redis
+      - mongo
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/ai_moderator}
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: ${MONGODB_DB:-ai_moderator}
+      HTTP_PORT: "3001"
     ports:
       - "3001:3001"
     networks:
@@ -93,3 +108,4 @@ networks:
 volumes:
   pgdata:
   redis_data:
+  mongodata:

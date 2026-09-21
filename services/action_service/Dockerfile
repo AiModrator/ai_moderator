@@ -12,6 +12,9 @@ RUN npm install
 # Copie des sources du monorepo
 COPY . .
 
+# Build production (tsc → dist/)
+RUN npm run build -w action_service
+
 EXPOSE 3001
 
-CMD ["npm", "run", "dev", "-w", "action_service"]
+CMD ["node", "services/action_service/dist/index.js"]
