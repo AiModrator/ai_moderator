@@ -165,16 +165,22 @@ class WorkerPool:
             "scale_events": self._monitor.scale_events,
         }
 
-    async def start(self) -> None:
-        """Lance le monitor et le worker ; répond aux signaux d'arrêt."""
+    async def start(self, *, install_signals: bool = True) -> None:
+        """Lance le monitor et le worker ; gère l'arrêt gracieux.
+
+        `install_signals=False` quand les signaux (SIGTERM/SIGINT) sont gérés par
+        un processus parent (uvicorn) tournant dans la même boucle asyncio.
+        """
         loop = asyncio.get_running_loop()
         self._monitor_task = asyncio.create_task(self._monitor.run())
-        self._install_signal_handlers(loop)
+        if install_signals:
+            self._install_signal_handlers(loop)
         self._started = True
         try:
             await self._worker.run()
         finally:
-            self._remove_signal_handlers(loop)
+            if install_signals:
+                self._remove_signal_handlers(loop)
             if self._monitor_task and not self._monitor_task.done():
                 self._monitor_task.cancel()
                 with suppress(asyncio.CancelledError):
