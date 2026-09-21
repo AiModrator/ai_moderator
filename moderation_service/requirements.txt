@@ -1,5 +1,14 @@
 fastapi
 uvicorn[standard]
+bullmq
 redis
-pydantic
+httpx
+psutil
+pydantic>=2
+pydantic-settings
+structlog
 python-dotenv
+# tests
+pytest
+pytest-asyncio
+respx

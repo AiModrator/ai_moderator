@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moderation-service"
+version = "0.1.0"
+description = "AI Moderator — Service de modération (détection, agrégation, publication)"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "unit: tests unitaires rapides, sans dépendance externe",
+    "integration: tests d'intégration avec Redis réel",
+    "e2e: tests de bout en bout (Redis réel + AI Gateway simulée)",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
