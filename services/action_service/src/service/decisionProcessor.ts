@@ -4,9 +4,10 @@
  * (ajoutés dans la tâche 07). Logique/§5 de `main.md`.
  */
 
-import type { ContentAction, UserAction } from '@ai-moderator/database';
+import type { ContentAction, RiskClass, UserAction } from '@ai-moderator/database';
 import type { DecisionJob } from '../types/job.js';
 import type { Verdict, VerdictDetection } from '../types/verdict.js';
+import type { Severity } from '../types/severity.js';
 import { moderationCaseId } from '../utils/id.js';
 import type { CommunityRepository } from '../models/communityRepository.js';
 import type { RuleRepository } from '../models/ruleRepository.js';
@@ -24,10 +25,29 @@ export interface DecisionProcessorContext {
   logger: Logger;
 }
 
+/**
+ * Attribution d'une sanction utilisateur à la détection qui l'a déclenchée
+ * (journal `user_actions` D-02 : `riskClass` + `severity` par événement).
+ */
+export interface UserActionEvent {
+  class: RiskClass;
+  severity: Severity;
+  actions: UserAction[];
+}
+
+export interface ProcessResult {
+  verdict: Verdict;
+  userActionEvents: UserActionEvent[];
+}
+
 export class DecisionProcessor {
   constructor(private readonly ctx: DecisionProcessorContext) {}
 
   async process(job: DecisionJob): Promise<Verdict> {
+    return (await this.processWithEvents(job)).verdict;
+  }
+
+  async processWithEvents(job: DecisionJob): Promise<ProcessResult> {
     const logger = this.ctx.logger.child({ jobId: `${job.batchId}:${job.content.contentId}` });
 
     // 1. Contexte communautaire (CommunityNotFoundError propagée en cas d'absence).
@@ -43,6 +63,7 @@ export class DecisionProcessor {
     const detections: VerdictDetection[] = [];
     const contentActions = new Set<ContentAction>();
     const userActions = new Set<UserAction>();
+    const userActionEvents: UserActionEvent[] = [];
 
     for (const detection of job.detections) {
       const threshold = this.ctx.thresholdRepository.resolve(detection.class, thresholds);
@@ -63,6 +84,10 @@ export class DecisionProcessor {
       detections.push({ class: detection.class, score: detection.score, severity, sources: detection.sources });
       for (const action of actions.contentActions) contentActions.add(action);
       for (const action of actions.userActions) userActions.add(action);
+
+      if (actions.userActions.length > 0) {
+        userActionEvents.push({ class: detection.class, severity, actions: actions.userActions });
+      }
     }
 
     // 4. Révision humaine (job PARTIAL) — décision D4.
@@ -78,17 +103,20 @@ export class DecisionProcessor {
     const decision: Verdict['decision'] = contentActions.size > 0 || userActions.size > 0 ? 'action_taken' : 'allow';
 
     return {
-      moderationCaseId: moderationCaseId(job.batchId, job.content.contentId),
-      contentId: job.content.contentId,
-      communityRef: job.communityRef,
-      userRef: job.content.userRef,
-      contentType: job.content.contentType,
-      status,
-      decision,
-      detections,
-      contentActions: [...contentActions],
-      userActions: [...userActions],
-      needsReview,
+      verdict: {
+        moderationCaseId: moderationCaseId(job.batchId, job.content.contentId),
+        contentId: job.content.contentId,
+        communityRef: job.communityRef,
+        userRef: job.content.userRef,
+        contentType: job.content.contentType,
+        status,
+        decision,
+        detections,
+        contentActions: [...contentActions],
+        userActions: [...userActions],
+        needsReview,
+      },
+      userActionEvents,
     };
   }
 }
