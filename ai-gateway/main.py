@@ -3,7 +3,8 @@
 Séquence de démarrage :
 1. `Settings` (`.env.local` prioritaire) → logging structlog.
 2. Vérification MongoDB (échec → log `error` + exit 1).
-3. FastAPI (uvicorn, `HTTP_PORT`) ; uvicorn gère les signaux.
+3. Création des index MongoDB.
+4. FastAPI (uvicorn, `HTTP_PORT`) ; uvicorn gère les signaux.
 """
 
 from __future__ import annotations
@@ -19,12 +20,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.api.health import router as health_router
 from app.config.logging import configure_logging, get_logger
 from app.config.settings import Settings
-from app.db import check_mongo, create_mongo_client, get_database
+from app.db import check_mongo, create_mongo_client, get_database, ensure_indexes
 
 VERSION = "0.1.0"
 
 
-def create_app(settings: Settings | None = None, mongo_client: AsyncIOMotorClient | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None, mongo_client: AsyncIOMotorClient | None = None
+) -> FastAPI:
     """Fabrique l'application FastAPI avec `/health`."""
     settings = settings or Settings()
     mongo_client = mongo_client or create_mongo_client(settings)
@@ -51,6 +54,10 @@ async def async_boot() -> None:
         log.error("deps.check", mongo=False, error="MongoDB unreachable")
         raise SystemExit(1)
     log.info("deps.check", mongo=True)
+
+    db = get_database(mongo_client, settings)
+    await ensure_indexes(db, settings)
+    log.info("db.indexes_created")
 
     app = create_app(settings, mongo_client)
 

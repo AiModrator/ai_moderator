@@ -54,4 +54,18 @@ class ModelDocument(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC), validation_alias="updatedAt", serialization_alias="updatedAt")
 
 
-__all__ = ["ProviderKind", "ProviderDocument", "ModelDocument"]
+class BudgetDocument(BaseModel):
+    """Budget dans MongoDB (`budgets`)."""
+
+    model_config = STRICT_CONFIG
+
+    account_id: str = Field(validation_alias="accountId", serialization_alias="accountId")
+    currency: str = "USD"
+    monthly_limit: float = Field(validation_alias="monthlyLimit", serialization_alias="monthlyLimit")
+    warning_threshold_pct: int = Field(validation_alias="warningThresholdPct", serialization_alias="warningThresholdPct")
+    consumed: float = 0.0
+    period_start: datetime = Field(default_factory=lambda: datetime.now(UTC), validation_alias="periodStart", serialization_alias="periodStart")
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC), validation_alias="updatedAt", serialization_alias="updatedAt")
+
+
+__all__ = ["ProviderKind", "ProviderDocument", "ModelDocument", "BudgetDocument"]

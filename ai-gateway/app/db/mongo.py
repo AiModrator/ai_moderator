@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 
 import motor.motor_asyncio as motor
+from pymongo import ASCENDING, DESCENDING
 
 from app.config.settings import Settings
 
@@ -28,4 +29,25 @@ async def check_mongo(client: motor.AsyncIOMotorClient, timeout_sec: float = 2.0
         return False
 
 
-__all__ = ["create_mongo_client", "get_database", "check_mongo"]
+async def ensure_indexes(db: motor.AsyncIOMotorDatabase, settings: Settings) -> None:
+    """Crée les index requis sur les collections (idempotent)."""
+    # providers : unique name
+    await db.providers.create_index("name", unique=True)
+    # models : unique id
+    await db.models.create_index("id", unique=True)
+    # budgets : unique accountId
+    await db.budgets.create_index("accountId", unique=True)
+    # usage : index composé {accountId: 1, timestamp: -1} + TTL
+    await db.usage.create_index([("accountId", ASCENDING), ("timestamp", DESCENDING)])
+    await db.usage.create_index(
+        "timestamp",
+        expireAfterSeconds=settings.usage_retention_days * 24 * 3600,
+    )
+
+
+__all__ = [
+    "check_mongo",
+    "create_mongo_client",
+    "get_database",
+    "ensure_indexes",
+]
