@@ -58,9 +58,15 @@ class ProviderRepository:
             return None
         return _doc_to_provider(doc, mask_key=True)
 
+    async def get_active(self, name: str) -> ProviderDocument | None:
+        """Récupère un provider activé ; clé **déchiffrée** pour l'adaptateur."""
+        doc = await self._col.find_one({"name": name, "enabled": True})
+        if not doc:
+            return None
+        return _doc_to_provider(doc, cipher=self._cipher)
+
     async def find_enabled(self) -> list[ProviderDocument]:
         """Retourne les providers enabled avec la clé **déchiffrée** pour l'adaptateur."""
-        print(f"[DEBUG find_enabled] cipher id: {id(self._cipher)}", flush=True)
         cursor = self._col.find({"enabled": True})
         providers: list[ProviderDocument] = []
         async for doc in cursor:

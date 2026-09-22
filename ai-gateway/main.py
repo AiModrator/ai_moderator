@@ -19,18 +19,17 @@ from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.api.health import router as health_router
-from app.api.routes_moderation import router as moderation_router
 from app.api.routes_admin import router as admin_router
-from app.config.logging import configure_logging, get_logger
-from app.config.settings import Settings
-from app.db import check_mongo, create_mongo_client, get_database, ensure_indexes
+from app.api.routes_moderation import router as moderation_router
 from app.budget.budget_manager import BudgetManager
-from app.usage.usage_meter import UsageMeter
-from app.prompt.registry import PromptRegistry
-from app.routing.router import Router
+from app.config.logging import configure_logging, get_logger
+from app.config.security import FernetCipher
+from app.config.settings import Settings
+from app.db import check_mongo, create_mongo_client, ensure_indexes, get_database
+from app.db.repositories import ModelRepository, ProviderRepository
 from app.routing.model_selector import ModelSelector
-from app.db.repositories import ModelRepository
-from app.db import check_mongo, create_mongo_client, get_database, ensure_indexes
+from app.routing.router import Router
+from app.usage.usage_meter import UsageMeter
 
 VERSION = "0.1.0"
 
@@ -40,12 +39,15 @@ def create_router(settings: Settings, db) -> Router:
     budget = BudgetManager(db, settings)
     meter = UsageMeter(db)
     selector = ModelSelector(ModelRepository(db.models))
+    cipher = FernetCipher(settings.encryption_key)
+    provider_repo = ProviderRepository(db.providers, cipher)
     return Router(
-        model_selector=ModelSelector(ModelRepository(db.models)),
+        model_selector=selector,
         adapters={},  # build_adapter sera appelé dynamiquement
         budget=budget,
-        meter=UsageMeter(db),
+        meter=meter,
         settings=settings,
+        provider_repo=provider_repo,
     )
 
 
@@ -104,6 +106,10 @@ async def async_boot() -> None:
     try:
         await server.serve()
     finally:
+        router = getattr(app.state, "router", None)
+        if router is not None:
+            with suppress(Exception):
+                await router.aclose()
         with suppress(Exception):
             mongo_client.close()
 

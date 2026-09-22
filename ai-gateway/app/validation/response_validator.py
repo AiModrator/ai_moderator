@@ -39,7 +39,9 @@ class ResponseValidator:
         # 2. Prétraitement : nettoyage des résultats avant validation Pydantic
         cleaned_parsed = self._pre_process_results(parsed)
 
-        # 3. Validation schéma
+        # 3. Validation schéma — `model` non requis côté LLM (fixé par le Router)
+        if not cleaned_parsed.get("model"):
+            cleaned_parsed["model"] = "unknown"
         try:
             response = ModerationResponse.model_validate(cleaned_parsed)
         except ValidationError as exc:
@@ -49,14 +51,28 @@ class ResponseValidator:
         return self._post_process(response, expected_ids)
 
     def _extract_json(self, text: str) -> dict[str, Any]:
-        """Extrait le premier objet JSON valide d'un texte."""
-        # Tentative 1 : JSON direct
+        """Extrait le premier JSON valide d'un texte (objet ou tableau)."""
+        # Tentative 1 : JSON direct (objet ou tableau)
         try:
-            return json.loads(text)
+            parsed = json.loads(text)
         except json.JSONDecodeError:
-            pass
+            parsed = None
+        if isinstance(parsed, list):
+            return {"results": parsed}
+        if isinstance(parsed, dict):
+            return parsed
 
-        # Tentative 2 : premier objet JSON {...} (regex non-gourmande)
+        # Tentative 2 : tableau JSON nu [...] dans du texte → {"results": [...]}
+        match = re.search(r"\[.*\]", text, re.DOTALL)
+        if match:
+            try:
+                arr = json.loads(match.group(0))
+            except json.JSONDecodeError:
+                arr = None
+            if isinstance(arr, list):
+                return {"results": arr}
+
+        # Tentative 3 : premier objet JSON \{\s*\} dans du texte
         match = re.search(r"\{.*\}", text, re.DOTALL)
         if match:
             try:

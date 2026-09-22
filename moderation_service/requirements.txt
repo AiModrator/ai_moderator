@@ -1,14 +1,14 @@
-fastapi
-uvicorn[standard]
-bullmq
-redis
-httpx
-psutil
-pydantic>=2
-pydantic-settings
-structlog
-python-dotenv
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+bullmq==3.2.6
+redis==7.4.1
+httpx==0.28.1
+psutil==7.2.2
+pydantic==2.13.5
+pydantic-settings==2.15.0
+structlog==26.1.0
+python-dotenv==1.2.3
 # tests
-pytest
-pytest-asyncio
-respx
+pytest==9.1.1
+pytest-asyncio==1.4.0
+respx==0.23.1

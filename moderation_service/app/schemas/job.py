@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, HttpUrl, field_validator, model_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
 
 from app.schemas import STRICT_CONFIG
 from app.schemas.enums import AttachmentType, ContentType, RiskClass
@@ -25,12 +25,12 @@ class ContentItem(BaseModel):
 
     model_config = STRICT_CONFIG
 
-    content_id: str
-    content_type: ContentType
-    user_ref: str
-    timestamp: datetime
-    text: str | None = None
-    attachments: list[Attachment] = []
+    content_id: str = Field(validation_alias="contentId", serialization_alias="contentId")
+    content_type: ContentType = Field(validation_alias="contentType", serialization_alias="contentType")
+    user_ref: str = Field(validation_alias="userRef", serialization_alias="userRef")
+    timestamp: datetime = Field(serialization_alias="timestamp")
+    text: str | None = Field(default=None, serialization_alias="text")
+    attachments: list[Attachment] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _not_empty(self) -> ContentItem:
@@ -44,11 +44,11 @@ class ContentBatchJob(BaseModel):
 
     model_config = STRICT_CONFIG
 
-    batch_id: str
-    community_ref: str
-    active_classes: list[RiskClass]
+    batch_id: str = Field(validation_alias="batchId", serialization_alias="batchId")
+    community_ref: str = Field(validation_alias="communityRef", serialization_alias="communityRef")
+    active_classes: list[RiskClass] = Field(validation_alias="activeClasses", serialization_alias="activeClasses")
     items: list[ContentItem]
-    retry_state: RetryState | None = None
+    retry_state: RetryState | None = Field(default=None, validation_alias="retryState", serialization_alias="retryState")
 
     @field_validator("batch_id")
     @classmethod

@@ -1,13 +1,13 @@
-fastapi
-uvicorn[standard]
-httpx
-motor
-pydantic>=2
-pydantic-settings
-structlog
-python-dotenv
-cryptography
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+httpx==0.28.1
+motor==3.7.1
+pydantic==2.13.5
+pydantic-settings==2.15.0
+structlog==26.1.0
+python-dotenv==1.2.3
+cryptography==50.0.1
 # tests
-pytest
-pytest-asyncio
-respx
+pytest==9.1.1
+pytest-asyncio==1.4.0
+respx==0.23.1

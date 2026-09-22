@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import secrets
+from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -18,8 +19,8 @@ async def _get_settings(request: Request) -> Settings:
 
 
 async def require_gateway_key(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
-    settings: Settings = Depends(_get_settings),
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer_scheme)],
+    settings: Annotated[Settings, Depends(_get_settings)],
 ) -> None:
     """Vérifie l'en-tête `Authorization: Bearer <GATEWAY_API_KEY>`.
 
@@ -42,8 +43,8 @@ async def require_gateway_key(
 
 
 async def require_admin_key(
-    x_admin_key: str = Header(..., alias="X-Admin-Key"),
-    settings: Settings = Depends(_get_settings),
+    x_admin_key: Annotated[str, Header(alias="X-Admin-Key")],
+    settings: Annotated[Settings, Depends(_get_settings)],
 ) -> None:
     """Vérifie l'en-tête `X-Admin-Key`.
 

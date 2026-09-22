@@ -7,8 +7,10 @@ construction, ce qui arrête le service avant le démarrage.
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 def _split_csv(value: object) -> object:
@@ -60,7 +62,7 @@ class Settings(BaseSettings):
     # ---------- Lot / filtres ----------
     max_items_per_batch: int = Field(default=50, ge=1)
     filter_timeout_sec: float = Field(default=10, ge=0)
-    filters_disabled: list[str] = Field(default_factory=list)
+    filters_disabled: Annotated[list[str], NoDecode] = Field(default_factory=list)
 
     # ---------- AI Gateway (contrat provisoire, phase 4/5) ----------
     ai_gateway_url: str = "http://localhost:4000"
@@ -78,8 +80,8 @@ class Settings(BaseSettings):
     spam_flood_threshold: int = Field(default=10, ge=1)
 
     # ---------- LinkFilter ----------
-    link_allowlist_domains: list[str] = Field(default_factory=list)
-    link_suspicious_tlds: list[str] = Field(
+    link_allowlist_domains: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    link_suspicious_tlds: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["zip", "mov", "tk", "top", "xyz", "gq", "ml", "cf", "click", "work"]
     )
 

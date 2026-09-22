@@ -34,10 +34,9 @@ class TestTestProviderAdapter:
         adapter = _TestProviderAdapter(None, None, RetryPolicy())
         req = self._make_request("hello __SCORE:0.75__ world")
         resp = await adapter.run(req)
-        data = json.loads(resp.raw_text)
-        # Le score est dans choices[0].message.content qui est un JSON stringifié
-        inner = json.loads(data["choices"][0]["message"]["content"])
-        assert inner["score"] == 0.75
+        # raw_text = contenu LLM direct au format ResponseValidator
+        inner = json.loads(resp.raw_text)
+        assert inner["results"][0]["score"] == 0.75
 
     @pytest.mark.asyncio
     async def test_error_convention(self) -> None:
@@ -58,8 +57,8 @@ class TestTestProviderAdapter:
         adapter = _TestProviderAdapter(None, None, RetryPolicy())
         req = self._make_request("just normal text")
         resp = await adapter.run(req)
-        data = json.loads(resp.raw_text)
-        assert data["choices"][0]["message"]["content"] == "0"
+        inner = json.loads(resp.raw_text)
+        assert inner["results"] == [{"id": "item-0", "score": 0.0, "reason": "test"}]
 
     @pytest.mark.asyncio
     async def test_latency_non_zero(self) -> None:

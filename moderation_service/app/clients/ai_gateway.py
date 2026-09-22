@@ -58,6 +58,7 @@ class AIGatewayClient:
         """
         payload = ModerationRequest(
             account_id="default",
+            active_classes=[risk_class],  # type: ignore[arg-type]
             media_type=media_type,  # type: ignore[arg-type]
             items=[ModerationItem(id=item_id, content=content) for item_id, content in items],
         )

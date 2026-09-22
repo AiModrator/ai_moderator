@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY database/package.json ./database/
 COPY services/ingestion_service/package.json ./services/ingestion_service/
 COPY services/action_service/package.json ./services/action_service/
-RUN npm install
+RUN npm install --fetch-retries=8 --fetch-retry-factor=2 --fetch-retry-mintimeout=30000 --fetch-retry-maxtimeout=120000
 
 # Copie des sources du monorepo
 COPY . .

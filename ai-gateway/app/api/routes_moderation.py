@@ -54,7 +54,7 @@ async def moderate(
     risk_class: Annotated[RiskClass, Path(description="Classe de risque à modérer")],
     req: ModerationRequest,
     request: Request,
-    app_router: Router = Depends(get_router),
+    app_router: Annotated[Router, Depends(get_router)],
 ) -> ModerationResponse:
     """Modère un lot de contenus pour une classe de risque donnée.
 

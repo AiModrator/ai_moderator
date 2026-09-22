@@ -44,10 +44,12 @@ class ProviderRead(BaseModel):
     kind: ProviderKind
     display_name: str = Field(validation_alias="displayName", serialization_alias="displayName")
     base_url: str = Field(validation_alias="baseUrl", serialization_alias="baseUrl")
-    api_key_encrypted: str = Field(validation_alias="apiKeyEncrypted", serialization_alias="apiKeyEncrypted")
+    api_key_encrypted: str | None = Field(
+        default=None, validation_alias="apiKeyEncrypted", serialization_alias="apiKeyEncrypted"
+    )
     enabled: bool
-    created_at: datetime = Field(validation_alias="createdAt", serialization_alias="createdAt")
-    updated_at: datetime = Field(validation_alias="updatedAt", serialization_alias="updatedAt")
+    created_at: datetime | None = Field(default=None, validation_alias="createdAt", serialization_alias="createdAt")
+    updated_at: datetime | None = Field(default=None, validation_alias="updatedAt", serialization_alias="updatedAt")
 
 
 class ModelCreate(BaseModel):

@@ -26,6 +26,9 @@ class ModerationRequest(BaseModel):
     model_config = STRICT_CONFIG
 
     account_id: str = Field(default="default", validation_alias="accountId", serialization_alias="accountId")
+    active_classes: list[str] = Field(
+        min_length=1, validation_alias="activeClasses", serialization_alias="activeClasses"
+    )
     media_type: MediaType = Field(validation_alias="mediaType", serialization_alias="mediaType")
     items: list[ModerationItem] = Field(min_length=1)
 

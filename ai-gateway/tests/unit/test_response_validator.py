@@ -53,6 +53,26 @@ class TestResponseValidator:
         assert resp.results[0].score == 0.0  # item manquant → score 0
 
     @pytest.mark.asyncio
+    async def test_bare_array_wrapped(self) -> None:
+        raw = '[{"id": "c-1", "score": 0.7, "reason": "toxic"}]'
+        resp = self.validator.validate(raw, ["c-1"])
+        assert resp.results[0].id == "c-1"
+        assert resp.results[0].score == 0.7
+
+    @pytest.mark.asyncio
+    async def test_bare_array_fenced(self) -> None:
+        raw = "```json\n[{\"id\": \"c-1\", \"score\": 0.6}]\n```"
+        resp = self.validator.validate(raw, ["c-1"])
+        assert resp.results[0].score == 0.6
+
+    @pytest.mark.asyncio
+    async def test_empty_array_default(self) -> None:
+        raw = "[]"
+        resp = self.validator.validate(raw, ["c-1"])
+        assert resp.results[0].id == "c-1"
+        assert resp.results[0].score == 0.0
+
+    @pytest.mark.asyncio
     async def test_unknown_id_ignored(self) -> None:
         raw = '{"model": "m", "results": [{"id": "unknown", "score": 0.9}]}'
         # L'id inconnu n'apparaît pas dans la réponse finale

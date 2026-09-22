@@ -91,6 +91,8 @@ services:
       REDIS_PASSWORD: ""
       CONTENT_QUEUE_NAME: contentQueue
       DECISION_QUEUE_NAME: decisionQueue
+      # Préfixe BullMQ identique à l'ingestion (défaut Node « bull »)
+      TEST_QUEUE_PREFIX: bull
       # HTTP
       HTTP_PORT: "8000"
       # WorkerPool (concurrence dynamique)
@@ -113,9 +115,9 @@ services:
       MAX_ITEMS_PER_BATCH: "50"
       FILTER_TIMEOUT_SEC: "10"
       FILTERS_DISABLED: ""
-      # AI Gateway (service placeholder, phase 4/5)
+      # AI Gateway (phase 4/5) — Bearer token partagé avec le gateway
       AI_GATEWAY_URL: http://ai_gateway:4000
-      AI_GATEWAY_API_KEY: ""
+      AI_GATEWAY_API_KEY: ${AI_GATEWAY_API_KEY}
       AI_REQUEST_TIMEOUT_SEC: "30"
       AI_MAX_PARALLEL_REQUESTS: "4"
       AI_TEXT_BATCH_SIZE: "10"

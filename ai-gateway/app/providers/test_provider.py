@@ -38,11 +38,11 @@ class TestProviderAdapter(ProviderAdapter):
         """Extrait le contenu du prompt utilisateur et applique les conventions."""
         t0 = time.perf_counter()
 
-        # Extrait le contenu de l'utilisateur (dernier message user)
-        user_content = self._extract_user_content(req.messages)
+        # Extrait les items (id + texte) du dernier message user
+        items = self._extract_user_items(req.messages)
 
         # Détermine le score selon la convention
-        score, raw_text = self._determine_score(user_content)
+        score, raw_text = self._determine_score(items)
 
         # Simule un délai minimal
         latency_ms = (time.perf_counter() - t0) * 1000
@@ -55,52 +55,60 @@ class TestProviderAdapter(ProviderAdapter):
             model="test-model",
         )
 
-    def _extract_user_content(self, messages: list[dict]) -> str:
-        """Retourne le contenu du dernier message user, ou chaîne vide."""
+    def _extract_user_items(self, messages: list[dict]) -> list[dict]:
+        """Récupère la liste `[{id, text}]` envoyée dans le dernier message user."""
         for msg in reversed(messages):
             if msg.get("role") == "user":
                 content = msg.get("content")
                 if isinstance(content, str):
-                    return content
+                    try:
+                        data = json.loads(content)
+                        if isinstance(data, list):
+                            return [{"id": i.get("id", ""), "text": i.get("text", "") or ""} for i in data]
+                    except json.JSONDecodeError:
+                        return [{"id": "", "text": content}]
                 if isinstance(content, list):
                     # Format multi-part (texte + images)
                     for part in content:
                         if part.get("type") == "text":
-                            return part.get("text", "")
-        return ""
+                            text = part.get("text", "")
+                            return [{"id": "", "text": text}]
+        return []
 
-    def _determine_score(self, content: str) -> tuple[float, str]:
-        """Applique les conventions de test au contenu."""
-        # Convention __SCORE:X__
-        if "__SCORE:" in content:
-            import re
+    def _determine_score(self, items: list[dict]) -> tuple[float, str]:
+        """Applique les conventions de test au contenu.
 
-            match = re.search(r"__SCORE:([01](?:\.\d+)?)__", content)
-            if match:
-                score = float(match.group(1))
-                return score, json.dumps(
-                    {
-                        "model": "test-model",
-                        "choices": [
-                            {
-                                "message": {"content": json.dumps({"score": score, "reason": "test"})}
-                            }
-                        ],
-                    }
-                )
+        Réponse au format attendu par `ResponseValidator` :
+        `{"results": [{"id", "score", "reason"}]}`.
+        """
+        joined = " ".join(i.get("text", "") for i in items)
 
         # Convention __ERROR__
-        if content == "__ERROR__":
+        if joined.strip() == "__ERROR__":
             raise ProviderTransientError("Test provider: erreur simulée")
 
         # Convention __INVALID__
-        if content == "__INVALID__":
+        if "__INVALID__" in joined:
             return 0.0, "not valid json at all {{{"
 
-        # Défaut
-        return 0.0, json.dumps(
-            {"model": "test-model", "choices": [{"message": {"content": "0"}}]}
-        )
+        # Convention __SCORE:X__ → score fixé, sinon 0 pour chaque item
+        if "__SCORE:" in joined:
+            import re
+
+            match = re.search(r"__SCORE:([01](?:\.\d+)?)__", joined)
+            score = float(match.group(1)) if match else 0.0
+        else:
+            score = 0.0
+
+        results = [
+            {"id": item["id"] or f"item-{i}", "score": score, "reason": "test"}
+            for i, item in enumerate(items)
+        ]
+        if not results:
+            results = [{"id": "unknown", "score": score, "reason": "test"}]
+
+        # raw_text = contenu LLM direct (équivalent choices[0].message.content d'OpenRouter)
+        return score, json.dumps({"results": results}, ensure_ascii=False)
 
     def _estimate_input_tokens(self, messages: list[dict]) -> int:
         """Estimation grossière : 1 token ≈ 4 caractères."""
