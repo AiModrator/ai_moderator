@@ -147,6 +147,44 @@ services:
     restart: unless-stopped
     ports:
       - "4000:4000"
+    environment:
+      # HTTP
+      HTTP_PORT: "4000"
+      # MongoDB
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: ai_gateway
+      # Security (requis)
+      ENCRYPTION_KEY: ${AI_GATEWAY_ENCRYPTION_KEY}
+      GATEWAY_API_KEY: ${AI_GATEWAY_API_KEY}
+      ADMIN_API_KEY: ${AI_GATEWAY_ADMIN_API_KEY}
+      # Providers / réseau
+      REQUEST_TIMEOUT_SEC: "30"
+      RETRY_MAX: "3"
+      RETRY_BASE_DELAY_MS: "500"
+      RETRY_MULTIPLIER: "2"
+      RETRY_MAX_DELAY_MS: "8000"
+      RESPONSE_RETRY: "1"
+      FALLBACK_TO_TEST_PROVIDER: "false"
+      MAX_ITEMS_PER_REQUEST: "100"
+      BUDGET_DEFAULT_MONTHLY_LIMIT: "100.0"
+      USAGE_RETENTION_DAYS: "90"
+      DEFAULT_ACCOUNT_ID: "default"
+      SHUTDOWN_TIMEOUT_SEC: "15"
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+      # AI Gateway (service dédié, phase 4/5)
+      AI_GATEWAY_URL: http://ai_gateway:4000
+      AI_GATEWAY_API_KEY: ${AI_GATEWAY_API_KEY}
+      AI_REQUEST_TIMEOUT_SEC: "30"
+      AI_MAX_PARALLEL_REQUESTS: "4"
+      AI_TEXT_BATCH_SIZE: "10"
+      AI_TEXT_MAX_CHARS_PER_ITEM: "4000"
+      AI_TEXT_MIN_CHARS: "2"
+      MAX_IMAGES_PER_ITEM: "4"
+      # Retry sélectif
+      MAX_FILTER_RETRIES: "3"
+    depends_on:
+      - mongo
     networks:
       - backend
 

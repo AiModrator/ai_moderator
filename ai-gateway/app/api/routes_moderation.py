@@ -17,10 +17,12 @@ from app.errors import (
     ProviderTransientError,
     ProviderUnavailableError,
 )
+from app.prompt.registry import PromptRegistry
 from app.routing.router import Router
 from app.schemas.enums import MediaType, RiskClass
 from app.schemas.moderation import ModerationRequest, ModerationResponse
 from app.tasks.registry import get_task
+from app.validation.response_validator import ResponseValidator
 
 router = APIRouter(
     prefix="/v1/moderation",
@@ -62,7 +64,7 @@ async def moderate(
     - Retourne `ModerationResponse` (résultats agrégés).
     """
     # Validation mediaType vs classe
-    from app.prompt.templates import CLASS_MEDIA_CAPABILITIES
+    from app.schemas.enums import CLASS_MEDIA_CAPABILITIES
 
     first_item = req.items[0] if req.items else None
     if first_item and first_item.attachments and any(a.type == "image" for a in first_item.attachments):
@@ -78,12 +80,14 @@ async def moderate(
 
     # Construire la tâche
     try:
-        task = get_task(risk_class.value, media_type.value)
+        prompts = PromptRegistry()
+        validator = ResponseValidator()
+        task = get_task(risk_class.value, media_type.value, prompts, validator)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No task registered for {risk_class}/{media_type}",
-        )
+        ) from None
 
     try:
         response = await app_router.route(task, req)

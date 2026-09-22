@@ -29,7 +29,7 @@ async def budget_manager(settings: Settings):
         log_format="console",
     ))
     yield bm
-    await client.close()
+    client.close()
 
 
 @pytest.mark.integration
@@ -64,7 +64,7 @@ async def test_increment_consumed_atomic():
     await asyncio.gather(*[repo.increment_consumed("acc-atomic", 1.0) for _ in range(10)])
     budget = await repo.get("acc-atomic")
     assert budget["consumed"] == 10.0
-    await client.close()
+    client.close()
 
 
 @pytest.mark.integration
@@ -93,7 +93,7 @@ async def test_reset_period():
     await repo2.increment_consumed("acc-reset", 50.0)
     budget = await repo2.reset_period("acc-reset")
     assert budget["consumed"] == 0.0
-    await client.close()
+    client.close()
 
 
 @pytest.mark.integration
@@ -125,4 +125,4 @@ async def test_can_afford_within_limit():
     can = await bm.can_afford("acc-budget", model, 2.0)
     assert can is False
 
-    await client.close()
+    client.close()

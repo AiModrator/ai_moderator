@@ -77,7 +77,18 @@ class UsageRepository:
             )
         pipeline.append({"$sort": {"_id": 1}})
         cursor = self._col.aggregate(pipeline)
-        return [doc async for doc in cursor]
+        results = [doc async for doc in cursor]
+        if not results and group_by:
+            # Retourner un résultat par défaut avec des zéros quand group_by est spécifié
+            # mais aucun document ne correspond
+            return [{
+                "totalRequests": 0,
+                "totalInputTokens": 0,
+                "totalOutputTokens": 0,
+                "totalCost": 0.0,
+                "totalErrors": 0,
+            }]
+        return results
 
 
 __all__ = ["UsageRepository"]

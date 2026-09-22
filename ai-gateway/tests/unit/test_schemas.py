@@ -58,6 +58,7 @@ class TestModerationRequest:
     def test_valid_text(self) -> None:
         req = ModerationRequest(
             accountId="acc-1",
+            activeClasses=[RiskClass.TOXICITY],
             mediaType="text",
             items=[{"id": "c-1", "content": "hello"}],
         )
@@ -67,6 +68,7 @@ class TestModerationRequest:
 
     def test_valid_image(self) -> None:
         req = ModerationRequest(
+            activeClasses=[RiskClass.HATE_SPEECH],
             mediaType="image",
             items=[{"id": "c-1", "content": "https://example.com/img.png"}],
         )

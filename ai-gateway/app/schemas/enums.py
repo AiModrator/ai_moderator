@@ -35,6 +35,13 @@ class MediaType(StrEnum):
     IMAGE = "image"
 
 
+class AttachmentType(StrEnum):
+    """Type de pièce jointe."""
+
+    IMAGE = "image"
+    VIDEO = "video"
+
+
 # Capacités média par classe (main.md §1, CLASS_MEDIA_CAPABILITIES)
 CLASS_MEDIA_CAPABILITIES: Final[dict[RiskClass, set[MediaType]]] = {
     RiskClass.SCAM: {MediaType.TEXT},

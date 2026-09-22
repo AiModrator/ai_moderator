@@ -7,10 +7,19 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
 
 from app.config import STRICT_CONFIG
-from app.schemas.enums import MediaType
+from app.schemas.enums import AttachmentType, MediaType, RiskClass
+
+
+class Attachment(BaseModel):
+    """Pièce jointe d'un contenu (image ou vidéo, URL http/https)."""
+
+    model_config = STRICT_CONFIG
+
+    type: AttachmentType
+    url: HttpUrl
 
 
 class ModerationItem(BaseModel):
@@ -19,7 +28,14 @@ class ModerationItem(BaseModel):
     model_config = STRICT_CONFIG
 
     id: str = Field(min_length=1)
-    content: str = Field(min_length=1)
+    content: str | None = None
+    attachments: list[Attachment] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _not_empty(self) -> ModerationItem:
+        if (self.content is None or not self.content.strip()) and not self.attachments:
+            raise ValueError("content and attachments cannot both be empty")
+        return self
 
 
 class ModerationRequest(BaseModel):
@@ -28,8 +44,16 @@ class ModerationRequest(BaseModel):
     model_config = STRICT_CONFIG
 
     account_id: str = Field(default="default", validation_alias="accountId", serialization_alias="accountId")
+    active_classes: list[RiskClass] = Field(validation_alias="activeClasses", serialization_alias="activeClasses")
     media_type: MediaType = Field(validation_alias="mediaType", serialization_alias="mediaType")
     items: Annotated[list[ModerationItem], Field(min_length=1)]
+
+    @field_validator("active_classes", mode="before")
+    @classmethod
+    def _active_classes_not_empty(cls, v: list[RiskClass]) -> list[RiskClass]:
+        if not v:
+            raise ValueError("activeClasses must not be empty")
+        return v
 
     @field_validator("items", mode="after")
     @classmethod
@@ -59,4 +83,4 @@ class ModerationResponse(BaseModel):
     results: list[ResultItem] = Field(default_factory=list)
 
 
-__all__ = ["ModerationItem", "ModerationRequest", "ModerationResponse", "ResultItem"]
+__all__ = ["ModerationItem", "ModerationRequest", "ModerationResponse", "ResultItem", "Attachment"]

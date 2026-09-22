@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from app.db.repositories import ModelRepository
 from app.schemas.enums import MediaType, RiskClass
+from app.schemas.providers import ModelDocument
 
 
 @dataclass(frozen=True)

@@ -14,6 +14,7 @@ from app.errors import (
     BudgetExceededError,
     InvalidResponseError,
     ProviderBadResponseError,
+    ProviderQuotaError,
     ProviderRequestError,
     ProviderTransientError,
     ProviderUnavailableError,
@@ -58,11 +59,12 @@ class Router:
         req: ModerationRequest,
     ) -> ModerationResponse:
         """Flux complet : sélection → budget → prompt → provider → validation → fallback."""
-        risk_class = req.active_classes[0]  # Simplifié : première classe
+        # Simplifié : première classe
+        risk_class = req.active_classes[0]
         media_type = req.items[0].attachments and "image" or "text"
 
         # 1. Candidats modèles
-        candidates = await self._selector.candidates(req.active_classes[0], media_type)
+        candidates = await self._selector.candidates(risk_class, media_type)
 
         # 2. Boucle fallback
         last_error: Exception | None = None
@@ -76,7 +78,7 @@ class Router:
             est_input = self._estimate_input_tokens(req)
             est_cost = self._budget.estimate_cost(model, est_input)
 
-            if not await self._budget.can_afford(req.account_id or self._settings.default_account_id, model.__dict__, self._budget.estimate_cost(model, self._estimate_input_tokens(req))):
+            if not await self._budget.can_afford(req.account_id or self._settings.default_account_id, model.__dict__, est_cost):
                 last_error = BudgetExceededError("Budget exhausted for this model")
                 continue
 

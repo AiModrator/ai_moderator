@@ -20,6 +20,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.api.health import router as health_router
 from app.api.routes_moderation import router as moderation_router
+from app.api.routes_admin import router as admin_router
 from app.config.logging import configure_logging, get_logger
 from app.config.settings import Settings
 from app.db import check_mongo, create_mongo_client, get_database, ensure_indexes
@@ -51,7 +52,7 @@ def create_router(settings: Settings, db) -> Router:
 def create_app(
     settings: Settings | None = None, mongo_client: AsyncIOMotorClient | None = None
 ) -> FastAPI:
-    """Fabrique l'application FastAPI avec `/health` et routes de modération."""
+    """Fabrique l'application FastAPI avec `/health` et routes de modération/admin."""
     settings = settings or Settings()
     mongo_client = mongo_client or create_mongo_client(settings)
     db = get_database(mongo_client, settings)
@@ -62,8 +63,9 @@ def create_app(
     app.state.db = db
     app.include_router(health_router)
     app.include_router(moderation_router)
+    app.include_router(admin_router)
 
-    # Initialiser le router dans l'état de l'app (lazy au premier appel)
+    # Initialiser le router dans l'état de l'app (au startup)
     @app.on_event("startup")
     async def startup():
         app.state.router = create_router(settings, db)

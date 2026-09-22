@@ -9,7 +9,6 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config.settings import Settings
 
-
 # Module-level singletons to avoid B008
 _bearer_scheme = HTTPBearer(auto_error=False)
 

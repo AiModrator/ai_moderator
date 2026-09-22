@@ -59,12 +59,22 @@ class UsageMeter:
         group_by: str | None = None,
     ) -> list[dict]:
         """Agrégation MongoDB sur l'usage."""
-        return await self._repo.aggregate(
+        results = await self._repo.aggregate(
             account_id=account_id,
             from_dt=from_dt,
             to_dt=to_dt,
             group_by=group_by,
         )
+        # Retourner un résultat par défaut avec des zéros si aucun résultat
+        if not results:
+            return [{
+                "totalRequests": 0,
+                "totalInputTokens": 0,
+                "totalOutputTokens": 0,
+                "totalCost": 0.0,
+                "totalErrors": 0,
+            }]
+        return results
 
 
 __all__ = ["UsageMeter"]
