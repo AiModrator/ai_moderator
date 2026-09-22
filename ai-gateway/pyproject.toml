@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-gateway"
+version = "0.1.0"
+description = "AI Gateway — abstraction des fournisseurs d'IA pour modération"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "unit: tests unitaires rapides, sans dépendance externe",
+    "integration: tests d'intégration avec MongoDB réel",
+    "e2e: tests de bout en bout (MongoDB + providers réels/simulés)",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 130
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]

@@ -1,1 +1,13 @@
-litellm[proxy]
+fastapi
+uvicorn[standard]
+httpx
+motor
+pydantic>=2
+pydantic-settings
+structlog
+python-dotenv
+cryptography
+# tests
+pytest
+pytest-asyncio
+respx
