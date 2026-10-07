@@ -1,0 +1,190 @@
+# =====================================================================
+# 1. INGESTION (EC2NodeClass + NodePool)
+# =====================================================================
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: ingestion-ec2-nodeclass 
+  labels:
+    app.kubernetes.io/component: ingestion-nodeClass-{{ .Values.namespace }}
+     {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  role: {{ .Values.karpeneter.ingestion.role }}
+  amiFamily: AL2
+  amiSelectorTerms:
+    - ssm: "/aws/service/eks/optimized-ami/1.30/amazon-linux-2/recommended/image_id"
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.ingestion.subnetTag }}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.ingestion.securityGroupTag }}
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: ingestion-nodepool
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: ingestion-ec2-nodeclass # Liaison stricte ici
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: {{ .Values.karpeneter.ingestion.capacityType | default (list "on-demand") | toJson }}
+  limits:
+    cpu: {{ .Values.karpeneter.ingestion.limitCpu | default "8" | quote }}
+    memory: {{ .Values.karpeneter.ingestion.limitMemory | default "32Gi" | quote }}
+
+---
+# =====================================================================
+# 2. ACTION (EC2NodeClass + NodePool)
+# =====================================================================
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: action-ec2-nodeclass 
+  labels:
+    app.kubernetes.io/component: action-nodeClass-{{ .Values.namespace }}
+     {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  role: {{ .Values.karpeneter.action.role }}
+  amiFamily: AL2
+  amiSelectorTerms:
+    - ssm: "/aws/service/eks/optimized-ami/1.30/amazon-linux-2/recommended/image_id"
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.action.subnetTag }}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.action.securityGroupTag }}
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: action-nodepool
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: action-ec2-nodeclass # Liaison stricte ici
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: {{ .Values.karpeneter.action.capacityType | default (list "on-demand") | toJson }}
+  limits:
+    cpu: {{ .Values.karpeneter.action.limitCpu | default "8" | quote }}
+    memory: {{ .Values.karpeneter.action.limitMemory | default "32Gi" | quote }}
+
+---
+# =====================================================================
+# 3. MODERATION (EC2NodeClass + NodePool)
+# =====================================================================
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: moderation-ec2-nodeclass 
+  labels:
+    app.kubernetes.io/component: moderation-nodeClass-{{ .Values.namespace }}
+     {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  role: {{ .Values.karpeneter.moderation.role }}
+  amiFamily: AL2
+  amiSelectorTerms:
+    - ssm: "/aws/service/eks/optimized-ami/1.30/amazon-linux-2/recommended/image_id"
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.moderation.subnetTag }}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.moderation.securityGroupTag }}
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: moderation-nodepool
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: moderation-ec2-nodeclass # Liaison stricte ici
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: {{ .Values.karpeneter.moderation.capacityType | default (list "on-demand") | toJson }}
+  limits:
+    cpu: {{ .Values.karpeneter.moderation.limitCpu | default "8" | quote }}
+    memory: {{ .Values.karpeneter.moderation.limitMemory | default "32Gi" | quote }}
+
+---
+# =====================================================================
+# 4. AI GATEWAY (EC2NodeClass + NodePool)
+# =====================================================================
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: ai-gateway-ec2-nodeclass 
+  labels:
+    app.kubernetes.io/component: ai_gateway-nodeClass-{{ .Values.namespace }}
+     {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  role: {{ .Values.karpeneter.ai_gateway.role }}
+  amiFamily: AL2
+  amiSelectorTerms:
+    - ssm: "/aws/service/eks/optimized-ami/1.30/amazon-linux-2/recommended/image_id"
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.ai_gateway.subnetTag }}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.karpeneter.ai_gateway.securityGroupTag }}
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: ai-gateway-nodepool # Attention : Pas d'underscore "_" dans les noms K8s, remplacé par "-"
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: ai-gateway-ec2-nodeclass # Liaison stricte ici
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: {{ .Values.karpeneter.ai_gateway.capacityType | default (list "on-demand") | toJson }}
+  limits:
+    cpu: {{ .Values.karpeneter.ai_gateway.limitCpu | default "8" | quote }}
+    memory: {{ .Values.karpeneter.ai_gateway.limitMemory | default "32Gi" | quote }}

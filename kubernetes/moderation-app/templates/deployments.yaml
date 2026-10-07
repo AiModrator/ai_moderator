@@ -1,0 +1,273 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: deployment-ingestion-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount.ingestion }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pod-ingestion-{{ .Values.namespace }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: pod-ingestion-{{ .Values.namespace }}
+        {{- include "monapp.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: ingestion-service
+          image: "{{ .Values.services.ingestion.image.name }}:{{ .Values.services.ingestion.image.tags }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.services.ingestion.image.port }}
+              name: http
+          envFrom:
+            - configMapRef:
+                name: configmap-ingestion-{{ .Values.namespace }}
+            - secretRef:
+                name: secrete-ingestion-{{ .Values.namespace }}
+
+          startupProbe:
+            httpGet:
+              port: {{ .Values.services.ingestion.image.port }}
+              path: {{ .Values.services.ingestion.heath.startup.path }}
+            failureThreshold: {{ .Values.services.ingestion.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.ingestion.heath.startup.periodSeconds }}
+
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.services.ingestion.image.port }}
+              path: {{ .Values.services.ingestion.heath.startup.path }}
+            failureThreshold: {{ .Values.services.ingestion.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.ingestion.heath.startup.periodSeconds }}
+
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.services.ingestion.image.port }}
+              path: {{ .Values.services.ingestion.heath.readiness.path }}
+            failureThreshold: {{ .Values.services.ingestion.heath.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.services.ingestion.heath.readiness.periodSeconds }}
+
+          resources:
+            requests:
+              memory: {{ .Values.services.ingestion.ressources.requests.memory }}
+              cpu: {{ .Values.services.ingestion.ressources.requests.cpu }}
+            limits:
+              memory: {{ .Values.services.ingestion.ressources.limits.memory }}
+              cpu: {{ .Values.services.ingestion.ressources.limits.cpu }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moderation-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: deployment-moderation-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount.moderation }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pod-moderation-{{ .Values.namespace }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: pod-moderation-{{ .Values.namespace }}
+        {{- include "monapp.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: moderation-service
+          image: "{{ .Values.services.moderation.image.name }}:{{ .Values.services.moderation.image.tags }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.services.moderation.image.port }}
+              name: http
+          envFrom:
+            - configMapRef:
+                name: configmap-moderation-{{ .Values.namespace }}
+            - secretRef:
+                name: secrete-moderation-{{ .Values.namespace }}
+
+          startupProbe:
+            httpGet:
+              port: {{ .Values.services.moderation.image.port }}
+              path: {{ .Values.services.moderation.heath.startup.path }}
+            failureThreshold: {{ .Values.services.moderation.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.moderation.heath.startup.periodSeconds }}
+
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.services.moderation.image.port }}
+              path: {{ .Values.services.moderation.heath.startup.path }}
+            failureThreshold: {{ .Values.services.moderation.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.moderation.heath.startup.periodSeconds }}
+
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.services.moderation.image.port }}
+              path: {{ .Values.services.moderation.heath.readiness.path }}
+            failureThreshold: {{ .Values.services.moderation.heath.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.services.moderation.heath.readiness.periodSeconds }}
+
+          resources:
+            requests:
+              memory: {{ .Values.services.moderation.ressources.requests.memory }}
+              cpu: {{ .Values.services.moderation.ressources.requests.cpu }}
+            limits:
+              memory: {{ .Values.services.moderation.ressources.limits.memory }}
+              cpu: {{ .Values.services.moderation.ressources.limits.cpu }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: action-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: deployment-action-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount.action }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pod-action-{{ .Values.namespace }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: pod-action-{{ .Values.namespace }}
+        {{- include "monapp.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: action-service
+          image: "{{ .Values.services.action.image.name }}:{{ .Values.services.action.image.tags }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.services.action.image.port }}
+              name: http
+          envFrom:
+            - configMapRef:
+                name: configmap-action-{{ .Values.namespace }}
+            - secretRef:
+                name: secrete-action-{{ .Values.namespace }}
+
+          startupProbe:
+            httpGet:
+              port: {{ .Values.services.action.image.port }}
+              path: {{ .Values.services.action.heath.startup.path }}
+            failureThreshold: {{ .Values.services.action.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.action.heath.startup.periodSeconds }}
+
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.services.action.image.port }}
+              path: {{ .Values.services.action.heath.startup.path }}
+            failureThreshold: {{ .Values.services.action.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.action.heath.startup.periodSeconds }}
+
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.services.action.image.port }}
+              path: {{ .Values.services.action.heath.readiness.path }}
+            failureThreshold: {{ .Values.services.action.heath.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.services.action.heath.readiness.periodSeconds }}
+
+          resources:
+            requests:
+              memory: {{ .Values.services.action.ressources.requests.memory }}
+              cpu: {{ .Values.services.action.ressources.requests.cpu }}
+            limits:
+              memory: {{ .Values.services.action.ressources.limits.memory }}
+              cpu: {{ .Values.services.action.ressources.limits.cpu }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-gateway-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: deployment-ai_gateway-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount.ai_gateway }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pod-ai_gateway-{{ .Values.namespace }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: pod-ai_gateway-{{ .Values.namespace }}
+        {{- include "monapp.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: ai-gateway-service
+          image: "{{ .Values.services.ai_gateway.image.name }}:{{ .Values.services.ai_gateway.image.tags }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.services.ai_gateway.image.port }}
+              name: http
+          envFrom:
+            - configMapRef:
+                name: configmap-ai-gateway-{{ .Values.namespace }}
+            - secretRef:
+                name: secrete-ai-gateway-{{ .Values.namespace }}
+
+          startupProbe:
+            httpGet:
+              port: {{ .Values.services.ai_gateway.image.port }}
+              path: {{ .Values.services.ai_gateway.heath.startup.path }}
+            failureThreshold: {{ .Values.services.ai_gateway.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.ai_gateway.heath.startup.periodSeconds }}
+
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.services.ai_gateway.image.port }}
+              path: {{ .Values.services.ai_gateway.heath.startup.path }}
+            failureThreshold: {{ .Values.services.ai_gateway.heath.startup.failureThreshold }}
+            periodSeconds: {{ .Values.services.ai_gateway.heath.startup.periodSeconds }}
+
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.services.ai_gateway.image.port }}
+              path: {{ .Values.services.ai_gateway.heath.readiness.path }}
+            failureThreshold: {{ .Values.services.ai_gateway.heath.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.services.ai_gateway.heath.readiness.periodSeconds }}
+
+          resources:
+            requests:
+              memory: {{ .Values.services.ai_gateway.ressources.requests.memory }}
+              cpu: {{ .Values.services.ai_gateway.ressources.requests.cpu }}
+            limits:
+              memory: {{ .Values.services.ai_gateway.ressources.limits.memory }}
+              cpu: {{ .Values.services.ai_gateway.ressources.limits.cpu }}

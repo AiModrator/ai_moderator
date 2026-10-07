@@ -1,0 +1,31 @@
+
+cluster_name : ai_moderator
+karpeneter:
+
+  ingestion:
+    role:  "node_role_cluster_{{ .Values.context.env }}"
+  
+    capacityType: ["on-demand"] # Permet de définir ["on-demand"] ou ["spot"]
+    limitCpu: "8"               # Plafond CPU pour ce NodePool
+    limitMemory: "32Gi"         # Plafond Mémoire pour ce NodePool
+
+  moderation:
+    role: "node_role_cluster_{{ .Values.context.env }}"
+
+    capacityType: ["on-demand"]
+    limitCpu: "8"
+    limitMemory: "32Gi"
+
+  action:
+    role: "node_role_cluster_{{ .Values.context.env }}"
+  
+    capacityType: ["on-demand"]
+    limitCpu: "8"
+    limitMemory: "32Gi"
+
+  ai_gateway:
+    role: "node_role_cluster_{{ .Values.context.env }}"
+  
+    capacityType: ["on-demand"]
+    limitCpu: "8"
+    limitMemory: "32Gi"

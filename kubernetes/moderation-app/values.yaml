@@ -1,0 +1,143 @@
+
+namespace : prod
+envirement : prod
+
+
+# Karpenter (EC2NodeClass + NodePool) — reference : terraform (cluster ai_moderator-prod)
+karpeneter:
+    ingestion:
+      role: node_role_cluster_prod        # IAM role des instances EC2 (terraform/modules/iam)
+      subnetTag: ai_moderator-prod        # tag karpenter.sh/discovery des subnets (terraform/modules/network)
+      securityGroupTag: ai_moderator-prod # tag karpenter.sh/discovery des security groups
+      capacityType: ["on-demand"]
+      limitCpu: "8"
+      limitMemory: "32Gi"
+    moderation:
+      role: node_role_cluster_prod
+      subnetTag: ai_moderator-prod
+      securityGroupTag: ai_moderator-prod
+      capacityType: ["on-demand"]
+      limitCpu: "8"
+      limitMemory: "32Gi"
+    action:
+      role: node_role_cluster_prod
+      subnetTag: ai_moderator-prod
+      securityGroupTag: ai_moderator-prod
+      capacityType: ["on-demand"]
+      limitCpu: "8"
+      limitMemory: "32Gi"
+    ai_gateway:
+      role: node_role_cluster_prod
+      subnetTag: ai_moderator-prod
+      securityGroupTag: ai_moderator-prod
+      capacityType: ["on-demand"]
+      limitCpu: "8"
+      limitMemory: "32Gi"
+
+
+replicaCount : 
+    ingestion : 2   
+    moderation : 2
+    action :  2
+    ai_gateway : 2 
+
+
+
+services : 
+    ingestion : 
+      image : 
+        name : ai-moderator/ingestion   #! adapter au registre (ECR/Docker Hub)
+        tags: latest
+        port: 3000                      # HTTP_PORT du service (values.env.yaml)
+      
+      heath : 
+        startup :  
+          path : /health
+          failureThreshold: 30
+          periodSeconds: 10
+        readiness : 
+          path : /health
+          failureThreshold: 3
+          periodSeconds: 5
+      
+      ressources:
+        limits:
+          cpu: "100m" #! je doit ici bien determner  les valeurs  optimals  que cas soit pour prod ou test
+          memory: "200Mi"
+        requests:
+          cpu: "100m"
+          memory: "200Mi"
+      
+       
+    moderation : 
+      image : 
+        name : ai-moderator/moderation  #! adapter au registre (ECR/Docker Hub)
+        tags: latest
+        port: 8000                      # HTTP_PORT du service (values.env.yaml)
+      
+      heath : 
+        startup :  
+          path : /health
+          failureThreshold: 30
+          periodSeconds: 10
+        readiness : 
+          path : /health
+          failureThreshold: 3
+          periodSeconds: 5
+
+      ressources:
+        limits:
+          cpu: "100m" #! je doit ici bien determner  les valeurs  optimals  que cas soit pour prod ou test
+          memory: "200Mi"
+        requests:
+          cpu: "100m"
+          memory: "200Mi"
+
+
+    action : 
+      image : 
+        name : ai-moderator/action      #! adapter au registre (ECR/Docker Hub)
+        tags: latest
+        port: 3001                      # HTTP_PORT du service (values.env.yaml)
+      
+      heath : 
+        startup :  
+          path : /health
+          failureThreshold: 30
+          periodSeconds: 10
+        readiness : 
+          path : /health
+          failureThreshold: 3
+          periodSeconds: 5
+      ressources:
+        limits:
+          cpu: "100m" #! je doit ici bien determner  les valeurs  optimals  que cas soit pour prod ou test
+          memory: "200Mi"
+        requests:
+          cpu: "100m"
+          memory: "200Mi"
+
+
+    ai_gateway : 
+      image : 
+        name : ai-moderator/ai-gateway  #! adapter au registre (ECR/Docker Hub)
+        tags: latest
+        port: 4000                      # HTTP_PORT du service (values.env.yaml)
+      
+      heath : 
+        startup :  
+          path : /health
+          failureThreshold: 30
+          periodSeconds: 10
+        readiness : 
+          path : /health
+          failureThreshold: 3
+          periodSeconds: 5
+      
+      ressources:
+        limits:
+          cpu: "100m" #! je doit ici bien determner  les valeurs  optimals  que cas soit pour prod ou test
+          memory: "200Mi"
+        requests:
+          cpu: "100m"
+          memory: "200Mi"

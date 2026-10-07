@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: service-ingestion-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/component: pod-ingestion-{{ .Values.namespace }}
+  ports:
+    - name: http
+      protocol: TCP
+      targetPort: {{ .Values.services.ingestion.image.port }}
+      port: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: moderation-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: service-moderation-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: pod-moderation-{{ .Values.namespace }}
+  ports:
+    - name: http
+      protocol: TCP
+      targetPort: {{ .Values.services.moderation.image.port }}
+      port: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: action-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: service-action-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: pod-action-{{ .Values.namespace }}
+  ports:
+    - name: http
+      protocol: TCP
+      targetPort: {{ .Values.services.action.image.port }}
+      port: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-gateway-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: service-ai_gateway-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/component: pod-ai_gateway-{{ .Values.namespace }}
+  ports:
+    - name: http
+      protocol: TCP
+      targetPort: {{ .Values.services.ai_gateway.image.port }}
+      port: 8080

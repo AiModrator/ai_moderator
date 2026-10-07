@@ -1,0 +1,61 @@
+# ConfigMaps — une par service (cles et valeurs liees a values.env.yaml)
+# charge avec : helm install ... -f values.yaml -f values.env.yaml
+{{- $env := .Values.env | default dict }}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-ingestion-{{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: configmap-ingestion-{{ .Values.namespace }}
+     {{- include "monapp.labels" . | nindent 4 }}
+data:
+   {{- range $key, $value := dig "ingestion" "config" (dict) $env }}
+   {{ $key }}: {{ $value | quote }}
+   {{- end }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-moderation-{{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: configmap-moderation-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := dig "moderation" "config" (dict) $env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-action-{{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: configmap-action-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := dig "action" "config" (dict) $env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-ai-gateway-{{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: configmap-ai-gateway-{{ .Values.namespace }}
+    {{- include "monapp.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := dig "ai_gateway" "config" (dict) $env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
