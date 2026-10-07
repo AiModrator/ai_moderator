@@ -1,23 +1,18 @@
-**/node_modules 
-**/.env.**
+# Secrets / environnement — jamais commites
 **/.env
+**/.env.**
+!.env.example
 
+# Dependances
+**/node_modules/
 
-**/generated/prisma
-
-
-/GEMINI.md
-/Context 
-
-**/Ai
-
-
-.agents
-
-.agent
-
-**/AGENTS.md
-
+# Artefacts de build / generes (jamais commites)
+**/dist/
+**/build/
+**/generated/
+/database/*.js
+/database/*.d.ts
+/database/*.map
 
 # Python
 **/venv/
@@ -25,9 +20,42 @@
 **/__pycache__/
 **/*.pyc
 **/*.pyo
+**/.pytest_cache/
+**/.ruff_cache/
 
+# Terraform
+# Le state est stocke dans S3 (terraform/envirements/prod/backend.tf) :
+# il ne doit JAMAIS etre commite dans git.
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/*.tfvars
+!**/*.tfvars.example
+**/crash.log
+**/crash.*.log
+**/override.tf
+**/override.tf.json
+**/.terraformrc
+**/terraform.rc
 
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
 
+# OS / editeurs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
 
-
-
+# Documents & outils internes
+**/Ai/
+/GEMINI.md
+/Context/
+.agents/
+.agent/
+**/AGENTS.md
+**/.kilo/
+**/.kilocode/
